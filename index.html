@@ -196,12 +196,12 @@
     border: none; border-radius: 4px; color: #fff; cursor: pointer; font-size: 13px;
   }
   .toast .toast-undo:hover { background: rgba(255,255,255,.3); }
-  .stage-\u755c\u5e74 { background: #f9ca24; }
-  .stage-\u9752\u6625\u671f { background: #f0932b; }
-  .stage-\u9752\u5e74 { background: #6ab04c; }
-  .stage-\u804c\u573a { background: #2980b9; }
-  .stage-\u4e2d\u5e74 { background: #8e44ad; }
-  .stage-\u665a\u5e74 { background: #e74c3c; }
+  .stage-童年 { background: #f9ca24; }
+  .stage-青春期 { background: #f0932b; }
+  .stage-青年 { background: #6ab04c; }
+  .stage-职场 { background: #2980b9; }
+  .stage-中年 { background: #8e44ad; }
+  .stage-晚年 { background: #e74c3c; }
   .stage-default { background: #95afc0; }
   @media (max-width: 768px) {
     .app-body { flex-direction: column; }
@@ -213,80 +213,80 @@
 <body>
 
 <header class="app-header">
-  <h1>&#x1f5fa;&#xfe0f; \u751f\u547d\u8f74</h1>
+  <h1>&#x1f5fa;&#xfe0f; 生命轴</h1>
   <div class="age-display">
-    \u5f53\u524d\u5e74\u9f84\uff1a
-    <input type="number" id="currentAgeInput" min="1" max="150" value="25" placeholder="\u5e74\u9f84">
+    当前年龄：
+    <input type="number" id="currentAgeInput" min="1" max="150" value="25" placeholder="年龄">
   </div>
 </header>
 
 <div class="app-body">
 
   <aside class="side-panel" id="sidePanel">
-    <h2>&#x270f;&#xfe0f; \u6dfb\u52a0\u4e8b\u4ef6</h2>
+    <h2>&#x270f;&#xfe0f; 添加事件</h2>
     <div class="form-group">
-      <label for="inputAge">\u5e74\u9f84 *</label>
-      <input type="number" id="inputAge" min="0" max="150" placeholder="\u4f8b\u5982 22">
+      <label for="inputAge">年龄 *</label>
+      <input type="number" id="inputAge" min="0" max="150" placeholder="例如 22">
     </div>
     <div class="form-group">
-      <label for="inputTitle">\u6807\u9898 *</label>
-      <input type="text" id="inputTitle" placeholder="\u4f8b\u5982 \u5927\u5b66\u6bd5\u4e1a">
+      <label for="inputTitle">标题 *</label>
+      <input type="text" id="inputTitle" placeholder="例如 大学毕业">
     </div>
     <div class="form-group">
-      <label for="inputDesc">\u63cf\u8ff0</label>
-      <textarea id="inputDesc" placeholder="\u8bb0\u5f55\u66f4\u591a\u7684\u7ec6\u8282\u2026\u2026"></textarea>
+      <label for="inputDesc">描述</label>
+      <textarea id="inputDesc" placeholder="记录更多的细节……"></textarea>
     </div>
     <div class="form-group">
-      <label for="inputStage">\u4eba\u751f\u9636\u6bb5</label>
+      <label for="inputStage">人生阶段</label>
       <select id="inputStage">
-        <option value="">-- \u4e0d\u9009\u62e9 --</option>
-        <option value="\u755c\u5e74">&#x1f9f8; \u755c\u5e74</option>
-        <option value="\u9752\u6625\u671f">&#x1f3eb; \u9752\u6625\u671f</option>
-        <option value="\u9752\u5e74">&#x1f393; \u9752\u5e74</option>
-        <option value="\u804c\u573a">&#x1f4bc; \u804c\u573a</option>
-        <option value="\u4e2d\u5e74">&#x1f3e1; \u4e2d\u5e74</option>
-        <option value="\u665a\u5e74">&#x1f305; \u665a\u5e74</option>
+        <option value="">-- 不选择 --</option>
+        <option value="童年">&#x1f9f8; 童年</option>
+        <option value="青春期">&#x1f3eb; 青春期</option>
+        <option value="青年">&#x1f393; 青年</option>
+        <option value="职场">&#x1f4bc; 职场</option>
+        <option value="中年">&#x1f3e1; 中年</option>
+        <option value="晚年">&#x1f305; 晚年</option>
       </select>
     </div>
     <div class="form-group">
-      <label>\u5f71\u54cd\u529b</label>
+      <label>影响力</label>
       <div class="impact-row">
         <input type="range" id="inputImpact" min="0" max="10" value="5">
         <span class="impact-value" id="impactValue">5</span>
       </div>
     </div>
-    <button class="btn btn-primary" id="btnAddEvent">&#x2795; \u6dfb\u52a0\u5230\u65f6\u95f4\u8f74</button>
+    <button class="btn btn-primary" id="btnAddEvent">&#x2795; 添加到时间轴</button>
     <hr style="margin:16px 0;border:none;border-top:1px solid #eee;">
     <div style="display:flex;gap:8px;">
-      <button class="btn btn-outline btn-sm" id="btnExportHTML" style="flex:1;">&#x1f4e4; \u5bfc\u51fa HTML</button>
-      <button class="btn btn-outline btn-sm" id="btnExportPDF" style="flex:1;">&#x1f4c4; \u5bfc\u51fa PDF</button>
+      <button class="btn btn-outline btn-sm" id="btnExportHTML" style="flex:1;">&#x1f4e4; 导出 HTML</button>
+      <button class="btn btn-outline btn-sm" id="btnExportPDF" style="flex:1;">&#x1f4c4; 导出 PDF</button>
     </div>
     <div style="margin-top:8px;display:flex;gap:8px;">
-      <button class="btn btn-outline btn-sm" id="btnImportFile" style="flex:1;">&#x1f4e5; \u5bfc\u5165</button>
-      <button class="btn btn-danger btn-sm" id="btnClearAll" style="flex:1;">&#x1f5d1;&#xfe0f; \u6e05\u7a7a</button>
+      <button class="btn btn-outline btn-sm" id="btnImportFile" style="flex:1;">&#x1f4e5; 导入</button>
+      <button class="btn btn-danger btn-sm" id="btnClearAll" style="flex:1;">&#x1f5d1;&#xfe0f; 清空</button>
     </div>
     <input type="file" id="fileInput" accept=".json,.html" style="display:none;">
     <p style="margin-top:12px;font-size:11px;color:#aaa;text-align:center;">
-      \u6570\u636e\u4fdd\u5b58\u5728\u6d4f\u89c8\u5668\u672c\u5730
+      数据保存在浏览器本地
     </p>
   </aside>
 
   <main class="timeline-area" id="timelineArea">
     <div class="timeline-toolbar">
-      <span style="font-size:13px;color:#888;">\u5171 <span id="eventCount">0</span> \u4e2a\u4e8b\u4ef6</span>
+      <span style="font-size:13px;color:#888;">共 <span id="eventCount">0</span> 个事件</span>
       <div class="spacer"></div>
       <div class="zoom-controls">
-        <button id="zoomOut" title="\u7f29\u5c0f">\u2212</button>
-        <span class="zoom-label" id="zoomLabel">1\u00d7</span>
-        <button id="zoomIn" title="\u653e\u5927">+</button>
+        <button id="zoomOut" title="缩小">−</button>
+        <span class="zoom-label" id="zoomLabel">1×</span>
+        <button id="zoomIn" title="放大">+</button>
       </div>
     </div>
     <div class="timeline-container" id="timelineContainer">
       <div class="timeline-line"></div>
       <div id="emptyState" class="empty-state">
         <div class="icon">&#x1f331;</div>
-        <p>\u4f60\u7684\u4eba\u751f\u8fd8\u662f\u4e00\u5f20\u767d\u7eb8</p>
-        <p style="font-size:12px;">\u5728\u5de6\u4fa7\u586b\u5199\u7b2c\u4e00\u4e2a\u4e8b\u4ef6\u5f00\u59cb\u8bb0\u5f55</p>
+        <p>你的人生还是一张白纸</p>
+        <p style="font-size:12px;">在左侧填写第一个事件开始记录</p>
       </div>
       <div id="timelineContent"></div>
     </div>
@@ -295,49 +295,49 @@
 
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
-    <h3 id="modalTitle">\u7f16\u8f91\u4e8b\u4ef6</h3>
+    <h3 id="modalTitle">编辑事件</h3>
     <div class="form-group">
-      <label for="modalAge">\u5e74\u9f84</label>
+      <label for="modalAge">年龄</label>
       <input type="number" id="modalAge" min="0" max="150">
     </div>
     <div class="form-group">
-      <label for="modalTitle">\u6807\u9898</label>
+      <label for="modalTitle">标题</label>
       <input type="text" id="modalTitle">
     </div>
     <div class="form-group">
-      <label for="modalDesc">\u63cf\u8ff0</label>
+      <label for="modalDesc">描述</label>
       <textarea id="modalDesc"></textarea>
     </div>
     <div class="form-group">
-      <label for="modalStage">\u4eba\u751f\u9636\u6bb5</label>
+      <label for="modalStage">人生阶段</label>
       <select id="modalStage">
-        <option value="">-- \u4e0d\u9009\u62e9 --</option>
-        <option value="\u755c\u5e74">&#x1f9f8; \u755c\u5e74</option>
-        <option value="\u9752\u6625\u671f">&#x1f3eb; \u9752\u6625\u671f</option>
-        <option value="\u9752\u5e74">&#x1f393; \u9752\u5e74</option>
-        <option value="\u804c\u573a">&#x1f4bc; \u804c\u573a</option>
-        <option value="\u4e2d\u5e74">&#x1f3e1; \u4e2d\u5e74</option>
-        <option value="\u665a\u5e74">&#x1f305; \u665a\u5e74</option>
+        <option value="">-- 不选择 --</option>
+        <option value="童年">&#x1f9f8; 童年</option>
+        <option value="青春期">&#x1f3eb; 青春期</option>
+        <option value="青年">&#x1f393; 青年</option>
+        <option value="职场">&#x1f4bc; 职场</option>
+        <option value="中年">&#x1f3e1; 中年</option>
+        <option value="晚年">&#x1f305; 晚年</option>
       </select>
     </div>
     <div class="form-group">
-      <label>\u5f71\u54cd\u529b</label>
+      <label>影响力</label>
       <div class="impact-row">
         <input type="range" id="modalImpact" min="0" max="10" value="5">
         <span class="impact-value" id="modalImpactValue">5</span>
       </div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-danger" id="btnDeleteEvent">&#x1f5d1;&#xfe0f; \u5220\u9664</button>
-      <button class="btn btn-primary" id="btnSaveEvent">&#x1f4be; \u4fdd\u5b58</button>
-      <button class="btn btn-outline" id="btnCancelModal">\u53d6\u6d88</button>
+      <button class="btn btn-danger" id="btnDeleteEvent">&#x1f5d1;&#xfe0f; 删除</button>
+      <button class="btn btn-primary" id="btnSaveEvent">&#x1f4be; 保存</button>
+      <button class="btn btn-outline" id="btnCancelModal">取消</button>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast">
   <span id="toastMsg"></span>
-  <button class="toast-undo" id="toastUndo" style="display:none;">\u64a4\u9500</button>
+  <button class="toast-undo" id="toastUndo" style="display:none;">撤销</button>
 </div>
 
 <script>
