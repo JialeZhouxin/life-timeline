@@ -5,893 +5,538 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>生命轴 - Life Timeline</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-    background: #f5f5f5;
-    color: #333;
-    min-height: 100vh;
-  }
-  .app-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #fff;
-    padding: 16px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 8px rgba(0,0,0,.15);
-  }
-  .app-header h1 { font-size: 20px; font-weight: 600; letter-spacing: 1px; }
-  .app-header .age-display { font-size: 14px; opacity: .9; }
-  .app-header .age-display input {
-    width: 48px; padding: 2px 6px; border: none; border-radius: 4px;
-    font-size: 14px; text-align: center; background: rgba(255,255,255,.2);
-    color: #fff; outline: none;
-  }
-  .app-header .age-display input::placeholder { color: rgba(255,255,255,.5); }
-  .app-body {
-    display: flex;
-    max-width: 1200px;
-    margin: 0 auto;
-    min-height: calc(100vh - 60px);
-  }
-  .side-panel {
-    width: 340px;
-    flex-shrink: 0;
-    background: #fff;
-    border-right: 1px solid #e0e0e0;
-    padding: 20px;
-    overflow-y: auto;
-    max-height: calc(100vh - 60px);
-  }
-  .side-panel h2 { font-size: 16px; margin-bottom: 16px; color: #555; }
-  .form-group { margin-bottom: 14px; }
-  .form-group label {
-    display: block; font-size: 13px; color: #666; margin-bottom: 4px;
-  }
-  .form-group input, .form-group select, .form-group textarea {
-    width: 100%; padding: 8px 10px; border: 1px solid #ccc;
-    border-radius: 6px; font-size: 14px; font-family: inherit;
-    transition: border-color .2s;
-  }
-  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-    border-color: #667eea; outline: none; box-shadow: 0 0 0 2px rgba(102,126,234,.15);
-  }
-  .form-group textarea { resize: vertical; min-height: 60px; }
-  .impact-row { display: flex; align-items: center; gap: 10px; }
-  .impact-row input[type="range"] { flex: 1; }
-  .impact-row .impact-value {
-    min-width: 28px; text-align: center; font-weight: 600; color: #667eea;
-  }
-  .btn {
-    display: block; width: 100%; padding: 10px; border: none; border-radius: 6px;
-    font-size: 15px; font-weight: 500; cursor: pointer; transition: all .2s;
-  }
-  .btn-primary { background: #667eea; color: #fff; }
-  .btn-primary:hover { background: #5a6fd6; }
-  .btn-danger { background: #e74c3c; color: #fff; }
-  .btn-danger:hover { background: #c0392b; }
-  .btn-outline { background: transparent; border: 1px solid #ccc; color: #555; }
-  .btn-outline:hover { border-color: #667eea; color: #667eea; }
-  .btn-sm { padding: 6px 12px; width: auto; display: inline-block; font-size: 13px; }
-  .timeline-area {
-    flex: 1;
-    overflow-y: auto;
-    max-height: calc(100vh - 60px);
-    position: relative;
-    background: #fff;
-  }
-  .timeline-container {
-    position: relative;
-    width: 100%;
-    padding: 0 24px 0 80px;
-  }
-  .timeline-line {
-    position: absolute;
-    left: 100px;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: #ddd;
-    border-radius: 2px;
-  }
-  .stage-bar {
-    position: absolute;
-    left: 112px;
-    width: 8px;
-    border-radius: 4px;
-    opacity: .5;
-    z-index: 1;
-    transition: opacity .2s;
-  }
-  .stage-bar:hover { opacity: .8; }
-  .event-node {
-    position: absolute;
-    left: 0;
-    transform: translateY(-50%);
-    z-index: 10;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    transition: transform .15s;
-  }
-  .event-node:hover { transform: translateY(-50%) scale(1.08); }
-  .event-circle {
-    border-radius: 50%;
-    border: 3px solid #667eea;
-    background: #fff;
-    position: absolute;
-    left: 86px;
-    z-index: 11;
-    transition: all .2s;
-    cursor: grab;
-  }
-  .event-circle:active { cursor: grabbing; }
-  .event-label {
-    margin-left: 116px;
-    font-size: 14px;
-    line-height: 1.4;
-    pointer-events: none;
-  }
-  .event-label .event-title { font-weight: 600; color: #333; }
-  .event-label .event-age { font-size: 12px; color: #999; margin-left: 6px; }
-  .event-label .event-desc {
-    font-size: 12px; color: #888; display: block;
-    max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .age-tick {
-    position: absolute; left: 74px; font-size: 11px; color: #aaa;
-    transform: translateY(-50%); z-index: 0; pointer-events: none;
-  }
-  .age-tick::after {
-    content: ''; position: absolute; left: 18px; top: 50%;
-    width: 10px; height: 1px; background: #ddd;
-  }
-  .modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,.4); z-index: 1000;
-    align-items: center; justify-content: center;
-  }
-  .modal-overlay.active { display: flex; }
-  .modal {
-    background: #fff; border-radius: 12px; padding: 24px;
-    width: 420px; max-width: 90vw;
-    box-shadow: 0 8px 32px rgba(0,0,0,.2);
-    max-height: 80vh; overflow-y: auto;
-  }
-  .modal h3 { font-size: 18px; margin-bottom: 16px; }
-  .modal .modal-actions { display: flex; gap: 8px; margin-top: 16px; }
-  .modal .modal-actions .btn { flex: 1; }
-  .timeline-toolbar {
-    display: flex; gap: 8px; padding: 12px 24px;
-    border-bottom: 1px solid #eee; background: #fafafa;
-    align-items: center; flex-wrap: wrap;
-  }
-  .timeline-toolbar .spacer { flex: 1; }
-  .zoom-controls { display: flex; align-items: center; gap: 4px; }
-  .zoom-controls button {
-    width: 28px; height: 28px; border: 1px solid #ccc;
-    background: #fff; border-radius: 4px; cursor: pointer; font-size: 16px;
-  }
-  .zoom-controls button:hover { background: #f0f0f0; }
-  .zoom-controls .zoom-label { font-size: 12px; color: #888; min-width: 36px; text-align: center; }
-  .empty-state {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    text-align: center; color: #bbb;
-  }
-  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
-  .empty-state p { font-size: 14px; }
-  .toast {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-    background: #333; color: #fff; padding: 10px 20px; border-radius: 8px;
-    font-size: 14px; z-index: 2000; opacity: 0; transition: opacity .3s;
-    pointer-events: none;
-  }
-  .toast.show { opacity: 1; }
-  .toast .toast-undo {
-    margin-left: 12px; padding: 2px 10px; background: rgba(255,255,255,.2);
-    border: none; border-radius: 4px; color: #fff; cursor: pointer; font-size: 13px;
-  }
-  .toast .toast-undo:hover { background: rgba(255,255,255,.3); }
-  .stage-\u755c\u5e74 { background: #f9ca24; }
-  .stage-\u9752\u6625\u671f { background: #f0932b; }
-  .stage-\u9752\u5e74 { background: #6ab04c; }
-  .stage-\u804c\u573a { background: #2980b9; }
-  .stage-\u4e2d\u5e74 { background: #8e44ad; }
-  .stage-\u665a\u5e74 { background: #e74c3c; }
-  .stage-default { background: #95afc0; }
-  @media (max-width: 768px) {
-    .app-body { flex-direction: column; }
-    .side-panel { width: 100%; max-height: none; border-right: none; border-bottom: 1px solid #e0e0e0; }
-    .timeline-area { max-height: none; }
-  }
+:root {
+  --green-900: #064E3B; --green-800: #065F46; --green-700: #047857;
+  --green-600: #059669; --green-500: #10B981; --green-400: #34D399;
+  --green-200: #A7F3D0; --green-100: #D1FAE5; --green-50: #ECFDF5;
+  --warm-50: #FFFCF5; --warm-100: #FFFBEB; --warm-200: #FEF3C7;
+  --amber: #F59E0B;
+  --gray-100: #F3F4F6; --gray-200: #E5E7EB; --gray-300: #D1D5DB;
+  --gray-400: #9CA3AF; --gray-500: #6B7280; --gray-600: #4B5563;
+  --gray-700: #374151; --gray-800: #1F2937;
+  --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.1), 0 4px 8px rgba(0,0,0,.06);
+  --tl-left: 80px; --tl-line-left: 100px; --tl-dot-left: 86px;
+  --tl-label-left: 116px; --tl-tick-left: 74px;
+}
+@media (max-width: 640px) {
+  :root { --tl-left: 40px; --tl-line-left: 56px; --tl-dot-left: 42px; --tl-label-left: 66px; --tl-tick-left: 30px; }
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ── Organic background pattern ── */
+body {
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background-color: #F5F7EC;
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(16,185,129,.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(245,158,11,.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(5,150,105,.06) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2310B981' fill-opacity='.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  color: var(--gray-800); min-height: 100vh;
+}
+
+/* ── Header: deep green to emerald ── */
+.app-header {
+  background: linear-gradient(135deg, #064E3B 0%, #059669 50%, #10B981 100%);
+  color: #fff; padding: 18px 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 4px 20px rgba(5,150,105,.25);
+}
+.app-header::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.3), transparent);
+}
+.app-header h1{font-size:20px;font-weight:700;letter-spacing:1px;text-shadow:0 1px 2px rgba(0,0,0,.1)}
+.app-header .age-display{font-size:14px;opacity:.92;display:flex;align-items:center;gap:8px}
+.app-header .age-display input{
+  width:52px;padding:4px 8px;border:1px solid rgba(255,255,255,.25);border-radius:var(--radius-sm);
+  font-size:14px;text-align:center;background:rgba(255,255,255,.15);color:#fff;outline:none;
+  transition:background .2s,border-color .2s;
+}
+.app-header .age-display input:focus{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
+
+/* ── Sidebar toggle ── */
+.sidebar-toggle{
+  display:none;position:fixed;bottom:24px;right:24px;
+  width:54px;height:54px;border-radius:50%;
+  background:linear-gradient(135deg,var(--green-600),var(--green-500));
+  color:#fff;border:none;font-size:26px;cursor:pointer;
+  box-shadow:0 6px 24px rgba(5,150,105,.35);z-index:99;
+  transition:transform .25s,box-shadow .25s;
+}
+.sidebar-toggle:hover{transform:scale(1.1) rotate(90deg);box-shadow:0 8px 28px rgba(5,150,105,.45)}
+.sidebar-toggle:active{transform:scale(.95)}
+
+/* ── Layout ── */
+.app-body{display:flex;max-width:1200px;margin:0 auto;min-height:calc(100vh - 60px);gap:0}
+
+/* ── Side panel: warm card ── */
+.side-panel{
+  width:340px;flex-shrink:0;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(10px);
+  border-right:1px solid rgba(0,0,0,.06);
+  padding:24px 20px;overflow-y:auto;max-height:calc(100vh - 60px);
+  transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .35s;
+}
+.side-panel h2{font-size:15px;margin-bottom:18px;color:var(--green-800);letter-spacing:.5px}
+.side-panel h2::before{content:'🌱 '}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;color:var(--gray-500);margin-bottom:5px;font-weight:500}
+.form-group input,.form-group select,.form-group textarea{
+  width:100%;padding:9px 12px;border:1.5px solid var(--gray-200);
+  border-radius:var(--radius-sm);font-size:14px;font-family:inherit;background:#fff;
+  transition:border-color .25s,box-shadow .25s;
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{
+  border-color:var(--green-500);outline:none;
+  box-shadow:0 0 0 4px rgba(16,185,129,.12);
+}
+.form-group textarea{resize:vertical;min-height:64px}
+.impact-row{display:flex;align-items:center;gap:10px}
+.impact-row input[type=range]{flex:1;accent-color:var(--green-500)}
+.impact-row .impact-value{min-width:28px;text-align:center;font-weight:700;color:var(--green-600);font-size:15px}
+
+/* ── Buttons ── */
+.btn{display:block;width:100%;padding:11px;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .25s,background .25s}
+.btn:active{transform:scale(.97)}.btn:focus-visible{outline:2px solid var(--green-500);outline-offset:2px}
+.btn-primary{
+  background:linear-gradient(135deg,var(--green-600),var(--green-500));color:#fff;
+  box-shadow:0 2px 8px rgba(5,150,105,.25);
+}
+.btn-primary:hover{box-shadow:0 4px 16px rgba(5,150,105,.35);transform:translateY(-1px)}
+.btn-danger{background:#ef4444;color:#fff}.btn-danger:hover{background:#dc2626}
+.btn-outline{background:transparent;border:1.5px solid var(--gray-200);color:var(--gray-600)}
+.btn-outline:hover{border-color:var(--green-500);color:var(--green-600);background:var(--green-50)}
+.btn-sm{padding:7px 14px;width:auto;display:inline-block;font-size:12px;border-radius:6px}
+
+/* ── Timeline area ── */
+.timeline-area{
+  flex:1;overflow-y:auto;max-height:calc(100vh - 60px);position:relative;
+  background:rgba(255,255,255,.7);backdrop-filter:blur(8px);
+}
+.timeline-container{position:relative;width:100%;padding:0 28px 0 var(--tl-left)}
+.timeline-line{
+  position:absolute;left:var(--tl-line-left);top:0;bottom:0;
+  width:3px;
+  background:linear-gradient(to bottom,var(--green-500),var(--green-400),var(--green-200));
+  border-radius:2px;
+}
+
+/* ── Stage bars ── */
+.stage-bar{
+  position:absolute;left:calc(var(--tl-line-left) + 12px);width:6px;
+  border-radius:3px;opacity:.55;z-index:1;
+  transition:opacity .25s,transform .25s;
+}
+.stage-bar:hover{opacity:.85;transform:scaleX(1.4)}
+
+/* ── Event nodes ── */
+.event-node{
+  position:absolute;left:0;transform:translateY(-50%);z-index:10;
+  cursor:pointer;display:flex;align-items:center;
+  transition:transform .2s;animation:fadeInUp .4s cubic-bezier(.4,0,.2,1) both;
+}
+.event-node:hover{transform:translateY(-50%) translateX(4px)}
+.event-circle{
+  border-radius:50%;background:#fff;
+  position:absolute;left:var(--tl-dot-left);z-index:11;
+  transition:transform .25s,box-shadow .25s;cursor:grab;
+  box-shadow:0 0 0 3px rgba(255,255,255,.9),0 2px 8px rgba(0,0,0,.12);
+}
+.event-circle:active{cursor:grabbing;transform:scale(1.15)}
+.event-label{
+  margin-left:var(--tl-label-left);font-size:14px;line-height:1.5;
+  pointer-events:none;background:rgba(255,255,255,.85);
+  padding:6px 12px;border-radius:var(--radius-sm);
+  box-shadow:var(--shadow-sm);backdrop-filter:blur(4px);
+}
+.event-label .event-title{font-weight:600;color:var(--gray-800)}
+.event-label .event-age{font-size:12px;color:var(--gray-400);margin-left:8px;font-weight:400}
+.event-label .event-desc{font-size:12px;color:var(--gray-500);display:block;margin-top:2px}
+
+/* ── Age ticks ── */
+.age-tick{
+  position:absolute;left:var(--tl-tick-left);font-size:11px;color:var(--gray-400);
+  transform:translateY(-50%);z-index:0;pointer-events:none;font-variant-numeric:tabular-nums;
+}
+.age-tick::after{
+  content:'';position:absolute;left:20px;top:50%;
+  width:8px;height:1.5px;background:var(--gray-200);border-radius:1px;
+}
+
+/* ── Drag tooltip ── */
+.drag-tooltip{
+  position:fixed;pointer-events:none;z-index:100;
+  background:var(--green-800);color:#fff;
+  padding:5px 12px;border-radius:20px;font-size:13px;font-weight:600;
+  white-space:nowrap;transform:translate(-50%,-130%);
+  box-shadow:0 4px 12px rgba(0,0,0,.15);
+}
+.drag-tooltip::after{
+  content:'';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%) rotate(45deg);
+  width:8px;height:8px;background:var(--green-800);
+}
+
+/* ── Modal ── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(6,78,59,.35);z-index:1000;
+  align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.modal-overlay.active{display:flex}
+.modal{
+  background:#fff;border-radius:var(--radius-lg);padding:28px;
+  width:440px;max-width:90vw;
+  box-shadow:var(--shadow-lg);max-height:80vh;overflow-y:auto;
+}
+.modal h3{font-size:18px;margin-bottom:18px;color:var(--green-800)}
+.modal .modal-actions{display:flex;gap:10px;margin-top:20px}
+.modal .modal-actions .btn{flex:1}
+
+/* ── Toolbar ── */
+.timeline-toolbar{
+  display:flex;gap:10px;padding:12px 24px;
+  border-bottom:1px solid rgba(0,0,0,.05);background:rgba(255,255,255,.85);
+  align-items:center;flex-wrap:wrap;
+}
+.timeline-toolbar .spacer{flex:1}
+.zoom-controls{display:flex;align-items:center;gap:4px}
+.zoom-controls button{
+  width:30px;height:30px;border:1px solid var(--gray-200);
+  background:#fff;border-radius:var(--radius-sm);cursor:pointer;
+  font-size:16px;transition:all .2s;display:flex;align-items:center;justify-content:center;
+}
+.zoom-controls button:hover{background:var(--green-50);border-color:var(--green-400);color:var(--green-600)}
+.zoom-controls .zoom-label{font-size:12px;color:var(--gray-400);min-width:36px;text-align:center;font-variant-numeric:tabular-nums}
+
+/* ── Empty state ── */
+.empty-state{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.empty-state .icon{font-size:56px;margin-bottom:16px;opacity:.8}
+.empty-state p{font-size:14px;color:var(--gray-400);line-height:1.6}
+.empty-state p:first-of-type{font-size:16px;color:var(--gray-500);font-weight:500}
+
+/* ── Toast ── */
+.toast{
+  position:fixed;bottom:28px;left:50%;
+  padding:12px 22px;border-radius:var(--radius-md);font-size:14px;z-index:2000;
+  opacity:0;pointer-events:none;
+  transition:opacity .35s,transform .4s cubic-bezier(.4,0,.2,1);
+  transform:translateX(-50%) translateY(16px);
+  background:var(--green-800);color:#fff;
+  box-shadow:0 6px 24px rgba(6,78,59,.25);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast .toast-undo{
+  margin-left:14px;padding:3px 12px;background:rgba(255,255,255,.15);
+  border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:13px;
+  font-weight:500;transition:background .2s;
+}
+.toast .toast-undo:hover{background:rgba(255,255,255,.25)}
+
+/* ── Animations ── */
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeInUp{
+  from{opacity:0;transform:translateY(10px) translateY(-50%)}
+  to{opacity:1;transform:translateY(-50%)}
+}
+@keyframes scaleIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .app-body{flex-direction:column}
+  .side-panel{width:100%;max-height:none;border-right:none;border-bottom:1px solid rgba(0,0,0,.06);border-radius:0}
+  .timeline-area{max-height:none}
+  .sidebar-toggle{display:flex;align-items:center;justify-content:center}
+  .side-panel.collapsed{display:none}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:0s!important;transition-duration:0s!important}
+}
 </style>
 </head>
 <body>
 
 <header class="app-header">
-  <h1>&#x1f5fa;&#xfe0f; \u751f\u547d\u8f74</h1>
+  <h1>&#x1f331; 生命轴</h1>
   <div class="age-display">
-    \u5f53\u524d\u5e74\u9f84\uff1a
-    <input type="number" id="currentAgeInput" min="1" max="150" value="25" placeholder="\u5e74\u9f84">
+    当前年龄：
+    <input type="number" id="currentAgeInput" min="1" max="150" value="25" placeholder="年龄">
   </div>
 </header>
+
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="切换表单面板">+</button>
 
 <div class="app-body">
 
   <aside class="side-panel" id="sidePanel">
-    <h2>&#x270f;&#xfe0f; \u6dfb\u52a0\u4e8b\u4ef6</h2>
+    <h2>记录你的人生</h2>
     <div class="form-group">
-      <label for="inputAge">\u5e74\u9f84 *</label>
-      <input type="number" id="inputAge" min="0" max="150" placeholder="\u4f8b\u5982 22">
+      <label for="inputAge">年龄 *</label>
+      <input type="number" id="inputAge" min="0" max="150" placeholder="例如 22">
     </div>
     <div class="form-group">
-      <label for="inputTitle">\u6807\u9898 *</label>
-      <input type="text" id="inputTitle" placeholder="\u4f8b\u5982 \u5927\u5b66\u6bd5\u4e1a">
+      <label for="inputTitle">标题 *</label>
+      <input type="text" id="inputTitle" placeholder="例如 大学毕业">
     </div>
     <div class="form-group">
-      <label for="inputDesc">\u63cf\u8ff0</label>
-      <textarea id="inputDesc" placeholder="\u8bb0\u5f55\u66f4\u591a\u7684\u7ec6\u8282\u2026\u2026"></textarea>
+      <label for="inputDesc">描述</label>
+      <textarea id="inputDesc" placeholder="记录更多的细节……"></textarea>
     </div>
     <div class="form-group">
-      <label for="inputStage">\u4eba\u751f\u9636\u6bb5</label>
+      <label for="inputStage">人生阶段</label>
       <select id="inputStage">
-        <option value="">-- \u4e0d\u9009\u62e9 --</option>
-        <option value="\u755c\u5e74">&#x1f9f8; \u755c\u5e74</option>
-        <option value="\u9752\u6625\u671f">&#x1f3eb; \u9752\u6625\u671f</option>
-        <option value="\u9752\u5e74">&#x1f393; \u9752\u5e74</option>
-        <option value="\u804c\u573a">&#x1f4bc; \u804c\u573a</option>
-        <option value="\u4e2d\u5e74">&#x1f3e1; \u4e2d\u5e74</option>
-        <option value="\u665a\u5e74">&#x1f305; \u665a\u5e74</option>
+        <option value="">-- 不选择 --</option>
+        <option value="童年">&#x1f476; 童年</option>
+        <option value="青春期">&#x1f393; 青春期</option>
+        <option value="青年">&#x1f31f; 青年</option>
+        <option value="职场">&#x1f4bc; 职场</option>
+        <option value="中年">&#x1f3e1; 中年</option>
+        <option value="晚年">&#x1f333; 晚年</option>
       </select>
     </div>
     <div class="form-group">
-      <label>\u5f71\u54cd\u529b</label>
+      <label>影响力</label>
       <div class="impact-row">
         <input type="range" id="inputImpact" min="0" max="10" value="5">
         <span class="impact-value" id="impactValue">5</span>
       </div>
     </div>
-    <button class="btn btn-primary" id="btnAddEvent">&#x2795; \u6dfb\u52a0\u5230\u65f6\u95f4\u8f74</button>
-    <hr style="margin:16px 0;border:none;border-top:1px solid #eee;">
+    <button class="btn btn-primary" id="btnAddEvent">&#x2795; 添加到时间轴</button>
+    <hr style="margin:18px 0;border:none;border-top:1px solid rgba(0,0,0,.06);">
     <div style="display:flex;gap:8px;">
-      <button class="btn btn-outline btn-sm" id="btnExportHTML" style="flex:1;">&#x1f4e4; \u5bfc\u51fa HTML</button>
-      <button class="btn btn-outline btn-sm" id="btnExportPDF" style="flex:1;">&#x1f4c4; \u5bfc\u51fa PDF</button>
+      <button class="btn btn-outline btn-sm" id="btnExportHTML" style="flex:1;">&#x1f4e4; 导出</button>
+      <button class="btn btn-outline btn-sm" id="btnExportPDF" style="flex:1;">&#x1f4c4; 打印</button>
     </div>
     <div style="margin-top:8px;display:flex;gap:8px;">
-      <button class="btn btn-outline btn-sm" id="btnImportFile" style="flex:1;">&#x1f4e5; \u5bfc\u5165</button>
-      <button class="btn btn-danger btn-sm" id="btnClearAll" style="flex:1;">&#x1f5d1;&#xfe0f; \u6e05\u7a7a</button>
+      <button class="btn btn-outline btn-sm" id="btnImportFile" style="flex:1;">&#x1f4e5; 导入</button>
+      <button class="btn btn-danger btn-sm" id="btnClearAll" style="flex:1;">&#x1f5d1;&#xfe0f; 清空</button>
     </div>
     <input type="file" id="fileInput" accept=".json,.html" style="display:none;">
-    <p style="margin-top:12px;font-size:11px;color:#aaa;text-align:center;">
-      \u6570\u636e\u4fdd\u5b58\u5728\u6d4f\u89c8\u5668\u672c\u5730
+    <p style="margin-top:16px;font-size:11px;color:var(--gray-400);text-align:center;line-height:1.6;">
+      数据保存在浏览器本地<br>导出文件可备份或迁移
     </p>
   </aside>
 
   <main class="timeline-area" id="timelineArea">
     <div class="timeline-toolbar">
-      <span style="font-size:13px;color:#888;">\u5171 <span id="eventCount">0</span> \u4e2a\u4e8b\u4ef6</span>
+      <span style="font-size:13px;color:var(--gray-400);">共 <span id="eventCount" style="font-weight:600;color:var(--green-600)">0</span> 个事件</span>
       <div class="spacer"></div>
       <div class="zoom-controls">
-        <button id="zoomOut" title="\u7f29\u5c0f">\u2212</button>
-        <span class="zoom-label" id="zoomLabel">1\u00d7</span>
-        <button id="zoomIn" title="\u653e\u5927">+</button>
+        <button id="zoomOut" title="缩小" aria-label="缩小">&minus;</button>
+        <span class="zoom-label" id="zoomLabel">1&times;</span>
+        <button id="zoomIn" title="放大" aria-label="放大">+</button>
       </div>
     </div>
     <div class="timeline-container" id="timelineContainer">
       <div class="timeline-line"></div>
       <div id="emptyState" class="empty-state">
         <div class="icon">&#x1f331;</div>
-        <p>\u4f60\u7684\u4eba\u751f\u8fd8\u662f\u4e00\u5f20\u767d\u7eb8</p>
-        <p style="font-size:12px;">\u5728\u5de6\u4fa7\u586b\u5199\u7b2c\u4e00\u4e2a\u4e8b\u4ef6\u5f00\u59cb\u8bb0\u5f55</p>
+        <p>你的人生还是一张白纸</p>
+        <p>在左侧填写第一个事件开始记录</p>
       </div>
       <div id="timelineContent"></div>
     </div>
   </main>
 </div>
 
-<div class="modal-overlay" id="modalOverlay">
+<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div class="modal">
-    <h3 id="modalTitle">\u7f16\u8f91\u4e8b\u4ef6</h3>
+    <h3 id="modalTitle">编辑事件</h3>
     <div class="form-group">
-      <label for="modalAge">\u5e74\u9f84</label>
+      <label for="modalAge">年龄</label>
       <input type="number" id="modalAge" min="0" max="150">
     </div>
     <div class="form-group">
-      <label for="modalTitle">\u6807\u9898</label>
+      <label for="modalTitle">标题</label>
       <input type="text" id="modalTitle">
     </div>
     <div class="form-group">
-      <label for="modalDesc">\u63cf\u8ff0</label>
+      <label for="modalDesc">描述</label>
       <textarea id="modalDesc"></textarea>
     </div>
     <div class="form-group">
-      <label for="modalStage">\u4eba\u751f\u9636\u6bb5</label>
+      <label for="modalStage">人生阶段</label>
       <select id="modalStage">
-        <option value="">-- \u4e0d\u9009\u62e9 --</option>
-        <option value="\u755c\u5e74">&#x1f9f8; \u755c\u5e74</option>
-        <option value="\u9752\u6625\u671f">&#x1f3eb; \u9752\u6625\u671f</option>
-        <option value="\u9752\u5e74">&#x1f393; \u9752\u5e74</option>
-        <option value="\u804c\u573a">&#x1f4bc; \u804c\u573a</option>
-        <option value="\u4e2d\u5e74">&#x1f3e1; \u4e2d\u5e74</option>
-        <option value="\u665a\u5e74">&#x1f305; \u665a\u5e74</option>
+        <option value="">-- 不选择 --</option>
+        <option value="童年">&#x1f476; 童年</option>
+        <option value="青春期">&#x1f393; 青春期</option>
+        <option value="青年">&#x1f31f; 青年</option>
+        <option value="职场">&#x1f4bc; 职场</option>
+        <option value="中年">&#x1f3e1; 中年</option>
+        <option value="晚年">&#x1f333; 晚年</option>
       </select>
     </div>
     <div class="form-group">
-      <label>\u5f71\u54cd\u529b</label>
+      <label>影响力</label>
       <div class="impact-row">
         <input type="range" id="modalImpact" min="0" max="10" value="5">
         <span class="impact-value" id="modalImpactValue">5</span>
       </div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-danger" id="btnDeleteEvent">&#x1f5d1;&#xfe0f; \u5220\u9664</button>
-      <button class="btn btn-primary" id="btnSaveEvent">&#x1f4be; \u4fdd\u5b58</button>
-      <button class="btn btn-outline" id="btnCancelModal">\u53d6\u6d88</button>
+      <button class="btn btn-danger" id="btnDeleteEvent">&#x1f5d1;&#xfe0f; 删除</button>
+      <button class="btn btn-primary" id="btnSaveEvent">&#x1f4be; 保存</button>
+      <button class="btn btn-outline" id="btnCancelModal">取消</button>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast">
   <span id="toastMsg"></span>
-  <button class="toast-undo" id="toastUndo" style="display:none;">\u64a4\u9500</button>
+  <button class="toast-undo" id="toastUndo" style="display:none;">撤销</button>
 </div>
 
 <script>
 (function() {
 
 // ===== Core Logic =====
-let _idCounter = 0;
-function generateId() {
-  return 'evt_' + Date.now().toString(36) + '_' + (++_idCounter).toString(36);
-}
+var _idCounter = 0;
+function generateId() { return 'evt_' + Date.now().toString(36) + '_' + (++_idCounter).toString(36); }
 function createEvent(opts) {
   opts = opts || {};
   if (opts.age === undefined || opts.age === null) throw new Error('age is required');
   if (!opts.title) throw new Error('title is required');
-  if (typeof opts.age !== 'number' || opts.age < 0 || !Number.isFinite(opts.age)) {
-    throw new Error('age must be a non-negative number');
-  }
-  if (opts.impact !== undefined) {
-    if (typeof opts.impact !== 'number' || opts.impact < 0 || opts.impact > 10 || !Number.isInteger(opts.impact)) {
-      throw new Error('impact must be an integer between 0 and 10');
-    }
-  }
-  return {
-    id: generateId(),
-    age: opts.age,
-    title: opts.title.trim(),
-    description: opts.description || '',
-    stage: opts.stage || '',
-    impact: opts.impact !== undefined ? opts.impact : 0,
-  };
+  if (typeof opts.age !== 'number' || opts.age < 0 || !Number.isFinite(opts.age)) throw new Error('age must be >= 0');
+  if (opts.impact !== undefined && (typeof opts.impact !== 'number' || opts.impact < 0 || opts.impact > 10 || !Number.isInteger(opts.impact))) throw new Error('impact 0-10');
+  return { id: generateId(), age: opts.age, title: opts.title.trim(), description: opts.description || '', stage: opts.stage || '', impact: opts.impact !== undefined ? opts.impact : 0 };
 }
-function addEvent(events, event) { return events.concat([event]); }
-function updateEvent(events, id, changes) {
-  var idx = events.findIndex(function(e) { return e.id === id; });
-  if (idx === -1) throw new Error('Event not found: ' + id);
-  var updated = Object.assign({}, events[idx], changes);
-  return events.slice(0, idx).concat([updated]).concat(events.slice(idx + 1));
-}
-function deleteEvent(events, id) {
-  var idx = events.findIndex(function(e) { return e.id === id; });
-  if (idx === -1) throw new Error('Event not found: ' + id);
-  return events.slice(0, idx).concat(events.slice(idx + 1));
-}
+function addEvent(e, ev) { return e.concat([ev]); }
+function updateEvent(events, id, ch) { var i = events.findIndex(function(e){return e.id===id}); if(i===-1)throw Error('not found'); return events.slice(0,i).concat([Object.assign({},events[i],ch)]).concat(events.slice(i+1)); }
+function deleteEvent(events, id) { var i = events.findIndex(function(e){return e.id===id}); if(i===-1)throw Error('not found'); return events.slice(0,i).concat(events.slice(i+1)); }
 function inferStages(events) {
-  var withStage = events.filter(function(e) { return e.stage; }).slice().sort(function(a, b) { return a.age - b.age; });
-  if (withStage.length === 0) return [];
-  var result = [];
-  var prev = withStage[0];
-  result.push({ stage: prev.stage, startAge: 0, endAge: prev.age });
-  for (var i = 1; i < withStage.length; i++) {
-    var curr = withStage[i];
-    if (curr.stage === prev.stage) {
-      result[result.length - 1].endAge = curr.age;
-    } else {
-      result.push({ stage: curr.stage, startAge: prev.age, endAge: curr.age });
-    }
-    prev = curr;
-  }
-  return result;
+  var ws = events.filter(function(e){return e.stage}).slice().sort(function(a,b){return a.age-b.age});
+  if (!ws.length) return [];
+  var r = [], p = ws[0]; r.push({stage:p.stage,startAge:0,endAge:p.age});
+  for (var i=1;i<ws.length;i++){var c=ws[i];if(c.stage===p.stage){r[r.length-1].endAge=c.age}else{r.push({stage:c.stage,startAge:p.age,endAge:c.age})}p=c}
+  return r;
 }
 
 // ===== Storage =====
-var STORAGE_KEY = 'life-timeline-events';
-function saveEvents(events) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(events)); } catch(e) {}
-}
-function loadEvents() {
-  try {
-    var raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch(e) { return []; }
-}
+var SK='life-timeline-events';
+function saveEvents(e){try{localStorage.setItem(SK,JSON.stringify(e))}catch(ex){}}
+function loadEvents(){try{var r=localStorage.getItem(SK);return r?JSON.parse(r):[]}catch(ex){return[]}}
 
-// ===== Layout Constants =====
-var PADDING_TOP = 60;
-var PADDING_BOTTOM = 60;
-var MIN_RADIUS = 6;
-var MAX_RADIUS = 24;
-var TICK_INTERVAL = 5;
-var STAGE_COLORS = {
-  '\u755c\u5e74': '#f9ca24',
-  '\u9752\u6625\u671f': '#f0932b',
-  '\u9752\u5e74': '#6ab04c',
-  '\u804c\u573a': '#2980b9',
-  '\u4e2d\u5e74': '#8e44ad',
-  '\u665a\u5e74': '#e74c3c',
-};
-function getStageColor(stage) { return STAGE_COLORS[stage] || '#95afc0'; }
-
-function calculateLayout(events, currentAge, containerHeight) {
-  var sorted = events.slice().sort(function(a, b) { return a.age - b.age; });
-  var usable = containerHeight - PADDING_TOP - PADDING_BOTTOM;
-  var range = Math.max(currentAge, 1);
-  function ageToY(age) { return PADDING_TOP + (age / range) * usable; }
-  function impactToRadius(impact) {
-    var c = Math.max(0, Math.min(10, impact || 0));
-    return MIN_RADIUS + (c / 10) * (MAX_RADIUS - MIN_RADIUS);
-  }
-  var ticks = [];
-  for (var a = 0; a <= currentAge; a += TICK_INTERVAL) {
-    ticks.push({ age: a, y: ageToY(a) });
-  }
-  if (currentAge % TICK_INTERVAL !== 0) {
-    ticks.push({ age: currentAge, y: ageToY(currentAge) });
-  }
-  var positionedEvents = sorted.map(function(e) {
-    return {
-      id: e.id, age: e.age, title: e.title,
-      description: e.description, stage: e.stage, impact: e.impact,
-      y: ageToY(e.age), radius: impactToRadius(e.impact),
-    };
-  });
-  var stages = inferStages(sorted).map(function(s) {
-    return {
-      stage: s.stage, color: getStageColor(s.stage),
-      startAge: s.startAge, endAge: s.endAge,
-      startY: ageToY(s.startAge), endY: ageToY(s.endAge),
-    };
-  });
-  return { events: positionedEvents, stages: stages, ticks: ticks, totalHeight: containerHeight };
+// ===== Layout =====
+var PT=60,PB=60,MINR=6,MAXR=24,TI=5;
+var SC={'\u7ae5\u5e74':'#6EE7B7','\u9752\u6625\u671f':'#FCD34D','\u9752\u5e74':'#34D399','\u804c\u573a':'#60A5FA','\u4e2d\u5e74':'#A78BFA','\u665a\u5e74':'#FCA5A5'};
+function gsc(s){return SC[s]||'#9CA3AF'}
+function cl(events,ca,ch){
+  var s=events.slice().sort(function(a,b){return a.age-b.age}),u=ch-PT-PB,ra=Math.max(ca,1);
+  function a2y(a){return PT+(a/ra)*u}
+  function i2r(i){var c=Math.max(0,Math.min(10,i||0));return MINR+(c/10)*(MAXR-MINR)}
+  var tk=[];for(var a=0;a<=ca;a+=TI)tk.push({age:a,y:a2y(a)});if(ca%TI!==0)tk.push({age:ca,y:a2y(ca)});
+  var pe=s.map(function(e){return{id:e.id,age:e.age,title:e.title,description:e.description,stage:e.stage,impact:e.impact,y:a2y(e.age),radius:i2r(e.impact)}});
+  var sg=inferStages(s).map(function(s){return{stage:s.stage,color:gsc(s.stage),startAge:s.startAge,endAge:s.endAge,startY:a2y(s.startAge),endY:a2y(s.endAge)}});
+  return{events:pe,stages:sg,ticks:tk,totalHeight:ch};
 }
 
 // ===== App State =====
-var currentEvents = [];
-var currentAge = 25;
-var zoomLevel = 1;
-var BASE_HEIGHT = 1200;
-var editingId = null;
+var events=[],cAge=25,zl=1,BH=1200,eid=null;
 
-function getTimelineHeight() {
-  var container = document.getElementById('timelineContainer');
-  return Math.max(BASE_HEIGHT * zoomLevel, container.clientHeight || 600);
-}
-
-function escHtml(str) {
-  var div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
+function getH(){return Math.max(BH*zl,Math.max(events.length*60+200,600))}
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
 
 // ===== Toast =====
-var toastTimer = null;
-function showToast(msg, onUndo) {
-  var el = document.getElementById('toast');
-  var msgEl = document.getElementById('toastMsg');
-  var undoBtn = document.getElementById('toastUndo');
-  msgEl.textContent = msg;
-  undoBtn.style.display = onUndo ? 'inline-block' : 'none';
-  undoBtn.onclick = function() {
-    clearTimeout(toastTimer);
-    el.classList.remove('show');
-    if (onUndo) onUndo();
-  };
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(function() { el.classList.remove('show'); }, 3000);
+var tt=null;
+function st(msg,und){
+  var el=$('toast'),m=$('toastMsg'),u=$('toastUndo');
+  m.textContent=msg;u.style.display=und?'inline-block':'none';
+  u.onclick=function(){clearTimeout(tt);el.classList.remove('show');if(und)und()};
+  el.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){el.classList.remove('show')},3000);
 }
+function $(id){return document.getElementById(id)}
 
 // ===== Render =====
-function render() {
-  var height = getTimelineHeight();
-  var layout = calculateLayout(currentEvents, currentAge, height);
-  var container = document.getElementById('timelineContent');
-  var empty = document.getElementById('emptyState');
-  container.style.height = height + 'px';
-  container.style.position = 'relative';
-  empty.style.display = currentEvents.length === 0 ? 'block' : 'none';
-  while (container.firstChild) container.removeChild(container.firstChild);
+var dt=null;
+function cdt(){if(!dt){dt=document.createElement('div');dt.className='drag-tooltip';dt.style.display='none';document.body.appendChild(dt)}return dt}
 
-  // Stage bars
-  for (var si = 0; si < layout.stages.length; si++) {
-    var s = layout.stages[si];
-    var bar = document.createElement('div');
-    bar.className = 'stage-bar';
-    bar.style.top = s.startY + 'px';
-    bar.style.height = Math.max(s.endY - s.startY, 4) + 'px';
-    bar.style.background = s.color;
-    bar.title = s.stage;
-    container.appendChild(bar);
+function render(anim){
+  var h=getH(),l=cl(events,cAge,h),c=$('timelineContent'),e=$('emptyState');
+  c.style.height=h+'px';c.style.position='relative';e.style.display=events.length===0?'block':'none';
+  while(c.firstChild)c.removeChild(c.firstChild);
+
+  for(var si=0;si<l.stages.length;si++){var s=l.stages[si];var b=document.createElement('div');b.className='stage-bar';b.style.top=s.startY+'px';b.style.height=Math.max(s.endY-s.startY,4)+'px';b.style.background=s.color;b.title=s.stage;c.appendChild(b)}
+  for(var ti=0;ti<l.ticks.length;ti++){var t=l.ticks[ti];var k=document.createElement('div');k.className='age-tick';k.style.top=t.y+'px';k.textContent=t.age+(t.age===cAge?' \u5c81 (\u73b0\u5728)':' \u5c81');c.appendChild(k)}
+  for(var ei=0;ei<l.events.length;ei++){var ev=l.events[ei];
+    var n=document.createElement('div');n.className='event-node';n.style.top=ev.y+'px';n.dataset.id=ev.id;if(!anim)n.style.animation='none';
+    var cl=document.createElement('div');cl.className='event-circle';cl.style.width=(ev.radius*2)+'px';cl.style.height=(ev.radius*2)+'px';cl.style.marginLeft=(-ev.radius)+'px';cl.style.border='3px solid '+(ev.stage?gsc(ev.stage):'#10B981');cl.title='\u5f71\u54cd\u529b: '+ev.impact+'/10';
+    var lb=document.createElement('div');lb.className='event-label';
+    lb.innerHTML='<span class="event-title">'+esc(ev.title)+'</span><span class="event-age">'+ev.age+' \u5c81</span>'+(ev.description?'<span class="event-desc">'+esc(ev.description)+'</span>':'');
+    n.appendChild(cl);n.appendChild(lb);c.appendChild(n);
+    n.addEventListener('click',function(e){e.stopPropagation();openEditModal(this.dataset.id)});
+    sd(n,cl,ev);
   }
-
-  // Age ticks
-  for (var ti = 0; ti < layout.ticks.length; ti++) {
-    var t = layout.ticks[ti];
-    var tick = document.createElement('div');
-    tick.className = 'age-tick';
-    tick.style.top = t.y + 'px';
-    tick.textContent = t.age + (t.age === currentAge ? ' \u5c81 (\u73b0\u5728)' : ' \u5c81');
-    container.appendChild(tick);
-  }
-
-  // Event nodes
-  for (var ei = 0; ei < layout.events.length; ei++) {
-    var ev = layout.events[ei];
-    var node = document.createElement('div');
-    node.className = 'event-node';
-    node.style.top = ev.y + 'px';
-    node.dataset.id = ev.id;
-
-    var circle = document.createElement('div');
-    circle.className = 'event-circle';
-    circle.style.width = (ev.radius * 2) + 'px';
-    circle.style.height = (ev.radius * 2) + 'px';
-    circle.style.marginLeft = (-ev.radius) + 'px';
-    circle.style.borderColor = ev.stage ? getStageColor(ev.stage) : '#667eea';
-    circle.title = '\u5f71\u54cd\u529b: ' + ev.impact + '/10';
-
-    var label = document.createElement('div');
-    label.className = 'event-label';
-    label.innerHTML = '<span class="event-title">' + escHtml(ev.title) + '</span>' +
-      '<span class="event-age">' + ev.age + ' \u5c81</span>' +
-      (ev.description ? '<span class="event-desc">' + escHtml(ev.description) + '</span>' : '');
-
-    node.appendChild(circle);
-    node.appendChild(label);
-    container.appendChild(node);
-
-    // Click to edit
-    node.addEventListener('click', function(e) {
-      e.stopPropagation();
-      openEditModal(this.dataset.id);
-    });
-
-    // Setup drag
-    setupDrag(node, circle, ev);
-  }
-
-  document.getElementById('eventCount').textContent = currentEvents.length;
+  $('eventCount').textContent=events.length;
 }
 
 // ===== Drag =====
-function setupDrag(node, circle, ev) {
-  var dragging = false, startY = 0, startAge = 0;
-  function onDown(e) {
-    dragging = true;
-    startY = e.clientY || (e.touches && e.touches[0].clientY);
-    startAge = ev.age;
-    node.style.zIndex = 20;
-    circle.style.cursor = 'grabbing';
-    if (e.preventDefault) e.preventDefault();
-  }
-  function onMove(e) {
-    if (!dragging) return;
-    var clientY = e.clientY || (e.touches && e.touches[0].clientY);
-    if (clientY === undefined) return;
-    var dy = clientY - startY;
-    var height = getTimelineHeight();
-    var usable = height - PADDING_TOP - PADDING_BOTTOM;
-    var ageDelta = (dy / usable) * currentAge;
-    var newAge = Math.round(Math.max(0, Math.min(currentAge, startAge + ageDelta)));
-    var y = PADDING_TOP + (newAge / currentAge) * usable;
-    node.style.top = y + 'px';
-  }
-  function onUp(e) {
-    if (!dragging) return;
-    dragging = false;
-    node.style.zIndex = 10;
-    circle.style.cursor = 'grab';
-    var clientY = e.clientY || (e.changedTouches && e.changedTouches[0].clientY);
-    if (clientY === undefined) return;
-    var dy = clientY - startY;
-    var height = getTimelineHeight();
-    var usable = height - PADDING_TOP - PADDING_BOTTOM;
-    var ageDelta = (dy / usable) * currentAge;
-    var newAge = Math.round(Math.max(0, Math.min(currentAge, startAge + ageDelta)));
-    if (newAge !== startAge) {
-      var prevEvents = currentEvents.slice();
-      currentEvents = updateEvent(currentEvents, ev.id, { age: newAge });
-      saveEvents(currentEvents);
-      render();
-      showToast('\u5df2\u66f4\u65b0\u5e74\u9f84\u4e3a ' + newAge + ' \u5c81', function() {
-        currentEvents = prevEvents;
-        saveEvents(currentEvents);
-        render();
-        showToast('\u5df2\u64a4\u9500\u4fee\u6539');
-      });
-    }
-  }
-  circle.addEventListener('mousedown', onDown);
-  document.addEventListener('mousemove', onMove);
-  document.addEventListener('mouseup', onUp);
-  circle.addEventListener('touchstart', onDown, { passive: false });
-  document.addEventListener('touchmove', onMove, { passive: false });
-  document.addEventListener('touchend', onUp);
+function sd(n,cl,ev){
+  var dg=false,sy=0,sa=0,tp=cdt();
+  function dn(e){dg=true;sy=e.clientY||(e.touches&&e.touches[0].clientY);sa=ev.age;n.style.zIndex=20;cl.style.cursor='grabbing';tp.style.display='block';if(e.preventDefault)e.preventDefault()}
+  function mv(e){if(!dg)return;var cy=e.clientY||(e.touches&&e.touches[0].clientY);if(cy===undefined)return;var dy=cy-sy,ht=getH(),ub=ht-PT-PB,ad=(dy/ub)*cAge,na=Math.round(Math.max(0,Math.min(cAge,sa+ad)));n.style.top=PT+(na/cAge)*ub+'px';tp.textContent=na+'\u5c81';tp.style.left=(e.clientX||0)+'px';tp.style.top=(e.clientY||0)+'px'}
+  function up(e){if(!dg)return;dg=false;n.style.zIndex=10;cl.style.cursor='grab';tp.style.display='none';var cy=e.clientY||(e.changedTouches&&e.changedTouches[0].clientY);if(cy===undefined)return;var dy=cy-sy,ht=getH(),ub=ht-PT-PB,ad=(dy/ub)*cAge,na=Math.round(Math.max(0,Math.min(cAge,sa+ad)));if(na!==sa){var pv=events.slice();events=updateEvent(events,ev.id,{age:na});saveEvents(events);render(true);st('\u5df2\u66f4\u65b0\u5e74\u9f84\u4e3a '+na+'\u5c81',function(){events=pv;saveEvents(events);render(true);st('\u5df2\u64a4\u9500\u4fee\u6539')})}}
+  cl.addEventListener('mousedown',dn);document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);cl.addEventListener('touchstart',dn,{passive:false});document.addEventListener('touchmove',mv,{passive:false});document.addEventListener('touchend',up);
 }
 
 // ===== Modal =====
-function openEditModal(id) {
-  editingId = id;
-  var ev = currentEvents.find(function(e) { return e.id === id; });
-  if (!ev) return;
-  document.getElementById('modalAge').value = ev.age;
-  document.getElementById('modalTitle').value = ev.title;
-  document.getElementById('modalDesc').value = ev.description;
-  document.getElementById('modalStage').value = ev.stage;
-  document.getElementById('modalImpact').value = ev.impact;
-  document.getElementById('modalImpactValue').textContent = ev.impact;
-  document.getElementById('modalTitle').textContent = '\u7f16\u8f91\u4e8b\u4ef6';
-  document.getElementById('modalOverlay').classList.add('active');
+function openEditModal(id){
+  eid=id;var ev=events.find(function(e){return e.id===id});if(!ev)return;
+  $('modalAge').value=ev.age;$('modalTitle').value=ev.title;$('modalDesc').value=ev.description;$('modalStage').value=ev.stage;$('modalImpact').value=ev.impact;$('modalImpactValue').textContent=ev.impact;$('modalTitle').textContent='\u7f16\u8f91\u4e8b\u4ef6';$('modalOverlay').classList.add('active');document.body.style.overflow='hidden';setTimeout(function(){$('modalAge').focus()},100);
 }
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('active');
-  editingId = null;
-}
+function closeModal(){$('modalOverlay').classList.remove('active');document.body.style.overflow='';eid=null}
+$('modalImpact').addEventListener('input',function(){$('modalImpactValue').textContent=this.value});
+$('btnSaveEvent').addEventListener('click',function(){if(!eid)return;var ch={age:parseInt($('modalAge').value)||0,title:$('modalTitle').value.trim()||'\u672a\u547d\u540d',description:$('modalDesc').value,stage:$('modalStage').value,impact:parseInt($('modalImpact').value)||0};events=updateEvent(events,eid,ch);saveEvents(events);render(true);closeModal();st('\u5df2\u4fdd\u5b58\u4fee\u6539')});
+$('btnDeleteEvent').addEventListener('click',function(){if(!eid||!confirm('\u786e\u5b9a\u5220\u9664\uff1f'))return;events=deleteEvent(events,eid);saveEvents(events);render(true);closeModal();st('\u5df2\u5220\u9664\u4e8b\u4ef6')});
+$('btnCancelModal').addEventListener('click',closeModal);
+$('modalOverlay').addEventListener('click',function(e){if(e.target===e.currentTarget)closeModal()});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&$('modalOverlay').classList.contains('active'))closeModal()});
 
-document.getElementById('modalImpact').addEventListener('input', function() {
-  document.getElementById('modalImpactValue').textContent = this.value;
+// ===== Form =====
+$('inputImpact').addEventListener('input',function(){$('impactValue').textContent=this.value});
+$('btnAddEvent').addEventListener('click',function(){
+  var age=parseInt($('inputAge').value),title=$('inputTitle').value.trim();
+  if(isNaN(age)){st('\u8bf7\u8f93\u5165\u5e74\u9f84');return}if(!title){st('\u8bf7\u8f93\u5165\u6807\u9898');return}
+  try{
+    var ev=createEvent({age:age,title:title,description:$('inputDesc').value.trim(),stage:$('inputStage').value,impact:parseInt($('inputImpact').value)||0});
+    events=addEvent(events,ev);saveEvents(events);render(true);
+    $('inputAge').value='';$('inputTitle').value='';$('inputDesc').value='';$('inputStage').value='';$('inputImpact').value=5;$('impactValue').textContent='5';
+    st('\u5df2\u6dfb\u52a0\uff1a\u300c'+title+'\u300d');
+  }catch(ex){st(ex.message)}
 });
-document.getElementById('btnSaveEvent').addEventListener('click', function() {
-  if (!editingId) return;
-  var changes = {
-    age: parseInt(document.getElementById('modalAge').value) || 0,
-    title: document.getElementById('modalTitle').value.trim() || '\u672a\u547d\u540d',
-    description: document.getElementById('modalDesc').value,
-    stage: document.getElementById('modalStage').value,
-    impact: parseInt(document.getElementById('modalImpact').value) || 0,
-  };
-  currentEvents = updateEvent(currentEvents, editingId, changes);
-  saveEvents(currentEvents);
-  render();
-  closeModal();
-  showToast('\u5df2\u4fdd\u5b58\u4fee\u6539');
-});
-document.getElementById('btnDeleteEvent').addEventListener('click', function() {
-  if (!editingId || !confirm('\u786e\u5b9a\u5220\u9664\u6b64\u4e8b\u4ef6\uff1f')) return;
-  currentEvents = deleteEvent(currentEvents, editingId);
-  saveEvents(currentEvents);
-  render();
-  closeModal();
-  showToast('\u5df2\u5220\u9664\u4e8b\u4ef6');
-});
-document.getElementById('btnCancelModal').addEventListener('click', closeModal);
-document.getElementById('modalOverlay').addEventListener('click', function(e) {
-  if (e.target === e.currentTarget) closeModal();
-});
+$('inputTitle').addEventListener('keydown',function(e){if(e.key==='Enter')$('btnAddEvent').click()});
 
-// ===== Form: Add Event =====
-document.getElementById('inputImpact').addEventListener('input', function() {
-  document.getElementById('impactValue').textContent = this.value;
-});
-document.getElementById('btnAddEvent').addEventListener('click', function() {
-  var age = parseInt(document.getElementById('inputAge').value);
-  var title = document.getElementById('inputTitle').value.trim();
-  if (isNaN(age)) { showToast('\u8bf7\u8f93\u5165\u5e74\u9f84'); return; }
-  if (!title) { showToast('\u8bf7\u8f93\u5165\u6807\u9898'); return; }
-  try {
-    var event = createEvent({
-      age: age,
-      title: title,
-      description: document.getElementById('inputDesc').value.trim(),
-      stage: document.getElementById('inputStage').value,
-      impact: parseInt(document.getElementById('inputImpact').value) || 0,
-    });
-    currentEvents = addEvent(currentEvents, event);
-    saveEvents(currentEvents);
-    render();
-    document.getElementById('inputAge').value = '';
-    document.getElementById('inputTitle').value = '';
-    document.getElementById('inputDesc').value = '';
-    document.getElementById('inputStage').value = '';
-    document.getElementById('inputImpact').value = 5;
-    document.getElementById('impactValue').textContent = '5';
-    showToast('\u5df2\u6dfb\u52a0\uff1a\u300c' + title + '\u300d');
-  } catch (err) {
-    showToast(err.message);
-  }
-});
-document.getElementById('inputTitle').addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') document.getElementById('btnAddEvent').click();
-});
-
-// ===== Age Input =====
-document.getElementById('currentAgeInput').addEventListener('change', function() {
-  var val = parseInt(this.value);
-  if (val > 0 && val <= 150) { currentAge = val; render(); }
-});
+// ===== Age =====
+$('currentAgeInput').addEventListener('change',function(){var v=parseInt(this.value);if(v>0&&v<=150){cAge=v;render(true)}});
 
 // ===== Zoom =====
-document.getElementById('zoomIn').addEventListener('click', function() {
-  zoomLevel = Math.min(4, zoomLevel * 1.5);
-  document.getElementById('zoomLabel').textContent = zoomLevel.toFixed(1) + '\u00d7';
-  render();
-});
-document.getElementById('zoomOut').addEventListener('click', function() {
-  zoomLevel = Math.max(0.25, zoomLevel / 1.5);
-  document.getElementById('zoomLabel').textContent = zoomLevel.toFixed(1) + '\u00d7';
-  render();
-});
-document.getElementById('timelineArea').addEventListener('wheel', function(e) {
-  if (e.ctrlKey || e.metaKey) {
-    e.preventDefault();
-    if (e.deltaY < 0) { zoomLevel = Math.min(4, zoomLevel * 1.1); }
-    else { zoomLevel = Math.max(0.25, zoomLevel / 1.1); }
-    document.getElementById('zoomLabel').textContent = zoomLevel.toFixed(1) + '\u00d7';
-    render();
-  }
-}, { passive: false });
+$('zoomIn').addEventListener('click',function(){zl=Math.min(4,zl*1.5);$('zoomLabel').textContent=zl.toFixed(1)+'\u00d7';render(true)});
+$('zoomOut').addEventListener('click',function(){zl=Math.max(.25,zl/1.5);$('zoomLabel').textContent=zl.toFixed(1)+'\u00d7';render(true)});
+$('timelineArea').addEventListener('wheel',function(e){if(e.ctrlKey||e.metaKey){e.preventDefault();if(e.deltaY<0){zl=Math.min(4,zl*1.1)}else{zl=Math.max(.25,zl/1.1)}$('zoomLabel').textContent=zl.toFixed(1)+'\u00d7';render(true)}},{passive:false});
+
+// ===== Sidebar Toggle =====
+$('sidebarToggle').addEventListener('click',function(){var p=$('sidePanel');p.classList.toggle('collapsed');this.textContent=p.classList.contains('collapsed')?'\u270f':'+'});
 
 // ===== Export / Import =====
-function downloadFile(content, filename, mimeType) {
-  var blob = new Blob([content], { type: mimeType + ';charset=utf-8' });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
+function dl(c,f,m){var b=new Blob([c],{type:m+';charset=utf-8'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=f;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(u)}
+function genHTML(d){var is=d.events.slice().sort(function(a,b){return a.age-b.age}),l='';for(var i=0;i<is.length;i++){var e=is[i],st=e.stage?' <span style="font-size:12px;color:#888;">['+esc(e.stage)+']</span>':'',desc=e.description?'<div class="desc">'+esc(e.description)+'</div>:'';l+='<div class="event"><span class="age">'+e.age+'\u5c81</span><div class="info"><div class="title">'+esc(e.title)+st+'</div>'+desc+'</div><div class="impact">\u5f71\u54cd\u529b: '+e.impact+'/10</div></div>'}var js=JSON.stringify(d).replace(/<\//g,'<\\/');return'<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>\u751f\u547d\u8f74 - \u5907\u4efd</title><style>body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f5f7ec;padding:20px;color:#1f2937;max-width:800px;margin:0 auto;}h1{color:#059669;font-size:22px}.meta{color:#6b7280;font-size:13px;margin:8px 0 20px}.event{background:#fff;border-radius:10px;padding:14px 18px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);display:flex;align-items:center;gap:14px}.event .age{background:#059669;color:#fff;border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600;white-space:nowrap}.event .info{flex:1}.event .title{font-weight:600;font-size:15px}.event .desc{font-size:13px;color:#6b7280;margin-top:2px}.event .impact{font-size:13px;color:#f59e0b}.footer{margin-top:24px;font-size:12px;color:#9ca3af;text-align:center}</style></head><body><h1>\u751f\u547d\u8f74 - \u6570\u636e\u5907\u4efd</h1><div class="meta">\u5bfc\u51fa\u65f6\u95f4: '+d.exportedAt+' | \u5f53\u524d\u5e74\u9f84: '+d.currentAge+'\u5c81 | \u5171 '+d.events.length+'\u4e2a\u4e8b\u4ef6</div>'+l+'<div class="footer">\u7528 \u751f\u547d\u8f74 \u8bb0\u5f55 \u00b7 \u5bfc\u5165\u6b64\u6587\u4ef6\u53ef\u6062\u590d\u6570\u636e</div><script>window.__LIFELINE_DATA__='+js+';<\\/script></body></html>'}
 
-function generateEditableHTML(data) {
-  var items = data.events.slice().sort(function(a,b){return a.age-b.age;});
-  var list = '';
-  for (var i = 0; i < items.length; i++) {
-    var e = items[i];
-    var st = e.stage ? ' <span style=\"font-size:12px;color:#888;\">[' + escHtml(e.stage) + ']</span>' : '';
-    var desc = e.description ? '<div class=\"desc\">' + escHtml(e.description) + '</div>' : '';
-    list += '<div class=\"event\"><span class=\"age\">' + e.age + ' \u5c81</span>' +
-      '<div class=\"info\"><div class=\"title\">' + escHtml(e.title) + st + '</div>' + desc + '</div>' +
-      '<div class=\"impact\">\u5f71\u54cd\u529b: ' + e.impact + '/10</div></div>';
-  }
-  var jsonStr = JSON.stringify(data).replace(/<\//g, '<\\/');
-  var S = '<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"UTF-8\">' +
-    '<meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\"><title>\u751f\u547d\u8f74 - \u5907\u4efd</title>' +
-    '<style>body{font-family:-apple-system,\"PingFang SC\",\"Microsoft YaHei\",sans-serif;background:#f5f5f5;padding:20px;color:#333;max-width:800px;margin:0 auto;}h1{color:#667eea;font-size:22px;}.meta{color:#888;font-size:13px;margin:8px 0 20px;}.event{background:#fff;border-radius:8px;padding:14px 18px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.08);display:flex;align-items:center;gap:14px;}.event .age{background:#667eea;color:#fff;border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600;white-space:nowrap;}.event .info{flex:1;}.event .title{font-weight:600;font-size:15px;}.event .desc{font-size:13px;color:#888;margin-top:2px;}.event .impact{font-size:13px;color:#f0932b;}.footer{margin-top:24px;font-size:12px;color:#aaa;text-align:center;}</style></head><body>' +
-    '<h1>\u751f\u547d\u8f74 - \u6570\u636e\u5907\u4efd</h1>' +
-    '<div class=\"meta\">\u5bfc\u51fa\u65f6\u95f4: ' + data.exportedAt + ' | \u5f53\u524d\u5e74\u9f84: ' + data.currentAge + ' \u5c81 | \u5171 ' + data.events.length + ' \u4e2a\u4e8b\u4ef6</div>' +
-    list +
-    '<div class=\"footer\">\u7528 \u751f\u547d\u8f74 \u8bb0\u5f55 \u00b7 \u5bfc\u5165\u6b64\u6587\u4ef6\u53ef\u6062\u590d\u6570\u636e</div>' +
-    '<script>window.__LIFELINE_DATA__ = ' + jsonStr + ';<\\/script></body></html>';
-  return S;
-}
-
-function generatePrintHTML(events, age) {
-  var sorted = events.slice().sort(function(a,b){return a.age-b.age;});
-  var list = '';
-  for (var i = 0; i < sorted.length; i++) {
-    var e = sorted[i];
-    var stageTag = e.stage ? '<div class=\"p-stage\" style=\"background:' + getStageColor(e.stage) + '\">' + escHtml(e.stage) + '</div>' : '';
-    var desc = e.description ? '<div class=\"p-desc\">' + escHtml(e.description) + '</div>' : '';
-    list += '<div class=\"p-event\"><div class=\"p-dot\"></div><div class=\"p-line\"></div>' +
-      '<div class=\"p-content\"><div class=\"p-age\">' + e.age + ' \u5c81</div>' +
-      '<div class=\"p-title\">' + escHtml(e.title) + '</div>' + desc + stageTag +
-      '<div class=\"p-impact\">\u5f71\u54cd\u529b: ' + e.impact + '/10</div></div></div>';
-  }
-  var stagesHtml = '';
-  var stages = inferStages(events);
-  if (stages.length > 0) {
-    var tags = '';
-    for (var i = 0; i < stages.length; i++) {
-      tags += '<span class=\"p-stage-tag\" style=\"background:' + getStageColor(stages[i].stage) + '\">' +
-        stages[i].stage + ' (' + stages[i].startAge + '-' + stages[i].endAge + ' \u5c81)</span>';
-    }
-    stagesHtml = '<div class=\"p-stages\"><strong>\u4eba\u751f\u9636\u6bb5</strong>' + tags + '</div>';
-  }
-  var S = '<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>\u751f\u547d\u8f74 - \u6253\u5370\u7248</title>' +
-    '<style>' +
-    'body{font-family:-apple-system,\"PingFang SC\",sans-serif;max-width:600px;margin:0 auto;padding:40px 20px;color:#333;}' +
-    'h1{text-align:center;color:#667eea;font-size:24px;margin-bottom:4px;}' +
-    '.sub{text-align:center;color:#888;font-size:14px;margin-bottom:32px;}' +
-    '.p-event{position:relative;padding-left:40px;margin-bottom:24px;}' +
-    '.p-dot{position:absolute;left:10px;top:6px;width:14px;height:14px;border-radius:50%;background:#667eea;border:3px solid #667eea;}' +
-    '.p-line{position:absolute;left:16px;top:20px;bottom:-24px;width:2px;background:#ddd;}' +
-    '.p-event:last-child .p-line{display:none;}' +
-    '.p-age{font-size:13px;font-weight:600;color:#667eea;}' +
-    '.p-title{font-size:16px;font-weight:600;margin:2px 0;}' +
-    '.p-desc{font-size:13px;color:#666;margin:2px 0;}' +
-    '.p-stage{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;color:#fff;margin:2px 0;}' +
-    '.p-impact{font-size:12px;color:#f0932b;}' +
-    '.p-stages{margin-top:32px;padding-top:16px;border-top:1px solid #eee;}' +
-    '.p-stages strong{display:block;margin-bottom:8px;font-size:14px;}' +
-    '.p-stage-tag{display:inline-block;padding:4px 10px;border-radius:12px;color:#fff;font-size:12px;margin:2px 4px 2px 0;}' +
-    '@media print{body{padding:20px;}.p-event{break-inside:avoid;}}' +
-    '</style></head><body>' +
-    '<h1>\u751f\u547d\u8f74</h1>' +
-    '<div class=\"sub\">' + age + ' \u5c81\u7684\u4eba\u751f\u65c5\u9014 \u00b7 \u5171 ' + events.length + ' \u4e2a\u91cd\u8981\u4e8b\u4ef6</div>' +
-    list + stagesHtml +
-    '<div style=\"margin-top:40px;text-align:center;font-size:11px;color:#aaa;\">\u7531 \u751f\u547d\u8f74 \u751f\u6210</div>' +
-    '</body></html>';
-  return S;
-}
-
-document.getElementById('btnExportHTML').addEventListener('click', function() {
-  var data = { version: 1, exportedAt: new Date().toISOString(), currentAge: currentAge, events: currentEvents };
-  downloadFile(generateEditableHTML(data), '\u751f\u547d\u8f74-' + new Date().toISOString().slice(0,10) + '.html', 'text/html');
-  showToast('\u5df2\u5bfc\u51fa\u53ef\u7f16\u8f91 HTML');
-});
-document.getElementById('btnExportPDF').addEventListener('click', function() {
-  var pw = window.open('', '_blank');
-  pw.document.write(generatePrintHTML(currentEvents, currentAge));
-  pw.document.close();
-  pw.focus();
-  setTimeout(function() { pw.print(); }, 500);
-  showToast('\u6253\u5f00\u6253\u5370\u89c6\u56fe\u2026');
-});
-document.getElementById('btnImportFile').addEventListener('click', function() {
-  document.getElementById('fileInput').click();
-});
-document.getElementById('fileInput').addEventListener('change', function(e) {
-  var file = e.target.files[0];
-  if (!file) return;
-  var reader = new FileReader();
-  reader.onload = function(ev) {
-    try {
-      var parsed = JSON.parse(ev.target.result);
-      if (parsed.events && Array.isArray(parsed.events)) {
-        importData(parsed); return;
-      }
-    } catch(e1) {
-      // Try embedded JSON in HTML
-      var match = ev.target.result.match(/window\.__LIFELINE_DATA__\s*=\s*(\{.+?\});/);
-      if (match) {
-        try {
-          var parsed = JSON.parse(match[1]);
-          if (parsed.events) { importData(parsed); return; }
-        } catch(e2) {}
-      }
-    }
-    showToast('\u65e0\u6cd5\u8bc6\u522b\u7684\u6587\u4ef6\u683c\u5f0f');
-  };
-  reader.readAsText(file);
-  e.target.value = '';
-});
-function importData(data) {
-  currentEvents = data.events;
-  if (data.currentAge) { currentAge = data.currentAge; document.getElementById('currentAgeInput').value = currentAge; }
-  saveEvents(currentEvents);
-  render();
-  showToast('\u5df2\u5bfc\u5165 ' + currentEvents.length + ' \u4e2a\u4e8b\u4ef6');
-}
-document.getElementById('btnClearAll').addEventListener('click', function() {
-  if (currentEvents.length === 0) return;
-  if (!confirm('\u786e\u5b9a\u6e05\u7a7a\u6240\u6709\u4e8b\u4ef6\uff1f')) return;
-  var prev = currentEvents;
-  currentEvents = [];
-  saveEvents(currentEvents);
-  render();
-  showToast('\u5df2\u6e05\u7a7a\u6240\u6709\u4e8b\u4ef6', function() {
-    currentEvents = prev;
-    saveEvents(currentEvents);
-    render();
-    showToast('\u5df2\u64a4\u9500\u6e05\u7a7a');
-  });
-});
+$('btnExportHTML').addEventListener('click',function(){var d={version:1,exportedAt:new Date().toISOString(),currentAge:cAge,events:events};dl(genHTML(d),'\u751f\u547d\u8f74-'+(new Date().toISOString().slice(0,10))+'.html','text/html');st('\u5df2\u5bfc\u51fa')});
+$('btnExportPDF').addEventListener('click',function(){st('\u6253\u5f00\u6253\u5370\u89c6\u56fe\u2026')});
+$('btnImportFile').addEventListener('click',function(){$('fileInput').click()});
+$('fileInput').addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){try{var p=JSON.parse(ev.target.result);if(p.events&&Array.isArray(p.events)){imp(p);return}}catch(e1){}var m=ev.target.result.match(/window\.__LIFELINE_DATA__\s*=\s*(\{.+?\});/);if(m){try{var p=JSON.parse(m[1]);if(p.events){imp(p);return}}catch(e2){}}st('\u65e0\u6cd5\u8bc6\u522b\u7684\u6587\u4ef6\u683c\u5f0f')};r.readAsText(f);e.target.value=''});
+function imp(d){events=d.events;if(d.currentAge){cAge=d.currentAge;$('currentAgeInput').value=cAge}saveEvents(events);render(true);st('\u5df2\u5bfc\u5165 '+events.length+'\u4e2a\u4e8b\u4ef6')}
+$('btnClearAll').addEventListener('click',function(){if(!events.length)return;if(!confirm('\u786e\u5b9a\u6e05\u7a7a\uff1f'))return;var p=events;events=[];saveEvents(events);render(true);st('\u5df2\u6e05\u7a7a\u6240\u6709\u4e8b\u4ef6',function(){events=p;saveEvents(events);render(true);st('\u5df2\u64a4\u9500\u6e05\u7a7a')})});
 
 // ===== Init =====
-function init() {
-  currentEvents = loadEvents();
-  var savedAge = localStorage.getItem('life-timeline-age');
-  if (savedAge) { currentAge = parseInt(savedAge) || 25; document.getElementById('currentAgeInput').value = currentAge; }
-  render();
-}
-document.getElementById('currentAgeInput').addEventListener('change', function() {
-  localStorage.setItem('life-timeline-age', this.value);
-});
-init();
+(function(){events=loadEvents();var sa=localStorage.getItem('life-timeline-age');if(sa){cAge=parseInt(sa)||25;$('currentAgeInput').value=cAge}render(true)})();
+$('currentAgeInput').addEventListener('change',function(){localStorage.setItem('life-timeline-age',this.value)});
 
 })();
 </script>
