@@ -1,0 +1,17 @@
+{
+  "name": "life-timeline",
+  "version": "1.0.0",
+  "description": "生命轴 - Life Timeline: 交互式人生轨迹时间轴",
+  "main": "index.html",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "test:watch": "node --test --watch tests/*.test.js"
+  },
+  "keywords": ["timeline", "life", "github-pages"],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs"
+}
