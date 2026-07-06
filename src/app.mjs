@@ -505,14 +505,85 @@ function init() {
     showToast('已导出可编辑 HTML');
   });
 
-  // Export PDF (print view)
-  $.btnExportPDF.addEventListener('click', function () {
-    const pw = window.open('', '_blank');
-    pw.document.write(generatePrintHTML(currentEvents, currentAge));
-    pw.document.close();
-    pw.focus();
-    setTimeout(function () { pw.print(); }, 500);
-    showToast('打开打印视图…');
+  // Export PDF (direct download — html2canvas + jsPDF)
+  $.btnExportPDF.addEventListener('click', async function () {
+    // Loading toast (persist until done)
+    $.toastMsg.textContent = '正在生成 PDF…';
+    $.toastUndo.style.display = 'none';
+    $.toast.classList.add('show');
+    clearTimeout(toastTimer);
+
+    try {
+      if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') {
+        throw new Error('PDF 库未加载，请刷新页面重试');
+      }
+
+      // Scroll timeline to top for consistent capture
+      $.timelineArea.scrollTop = 0;
+
+      // Capture the timeline container at 1x resolution
+      var canvas = await html2canvas($.timelineContainer, {
+        scale: 1,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#FFFFFF',
+      });
+
+      // Create PDF (A4 portrait)
+      var pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+      var pageW = pdf.internal.pageSize.getWidth();
+      var pageH = pdf.internal.pageSize.getHeight();
+      var margin = 8;
+      var usableW = pageW - margin * 2;
+      var usableH = pageH - margin * 2;
+
+      var cw = canvas.width;
+      var ch = canvas.height;
+      var pxPerMm = cw / usableW;
+      var fullImgH = ch / pxPerMm;  // full image height in mm
+
+      function addPageSlice(canvas, srcY, sliceH) {
+        var tmp = document.createElement('canvas');
+        tmp.width = cw;
+        tmp.height = sliceH;
+        tmp.getContext('2d').drawImage(canvas, 0, srcY, cw, sliceH, 0, 0, cw, sliceH);
+        pdf.addImage(tmp.toDataURL('image/png'), 'PNG', margin, margin, usableW, sliceH / pxPerMm);
+      }
+
+      if (fullImgH <= usableH) {
+        addPageSlice(canvas, 0, ch);
+      } else {
+        var sliceH = usableH * pxPerMm;
+        var srcY = 0;
+        var pageNum = 0;
+        while (srcY < ch) {
+          if (pageNum > 0) pdf.addPage();
+          var h = Math.min(sliceH, ch - srcY);
+          addPageSlice(canvas, srcY, h);
+          srcY += sliceH;
+          pageNum++;
+        }
+      }
+
+      pdf.save('生命轴-时间轴.pdf');
+
+      // Success toast
+      $.toastMsg.textContent = 'PDF 已下载 ✓';
+      toastTimer = setTimeout(function () {
+        $.toast.classList.remove('show');
+      }, 3000);
+    } catch (err) {
+      // Fallback: try print view
+      $.toastMsg.textContent = 'PDF 生成失败，改用打印视图: ' + err.message;
+      toastTimer = setTimeout(function () {
+        $.toast.classList.remove('show');
+      }, 4000);
+      var pw = window.open('', '_blank');
+      pw.document.write(generatePrintHTML(currentEvents, currentAge));
+      pw.document.close();
+      pw.focus();
+      setTimeout(function () { pw.print(); }, 500);
+    }
   });
 
   // Import
