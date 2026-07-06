@@ -1,7 +1,7 @@
-const { describe, it, before, after } = require('node:test');
-const assert = require('node:assert');
-const { createEvent } = require('../src/core');
-const { saveEvents, loadEvents } = require('../src/storage');
+import { describe, it, before, after } from 'node:test';
+import assert from 'node:assert';
+import { createEvent } from '../src/core.mjs';
+import { saveEvents, loadEvents } from '../src/storage.mjs';
 
 // In-memory mock for localStorage
 class MockStorage {
