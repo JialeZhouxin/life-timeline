@@ -521,9 +521,9 @@ function init() {
       // Scroll timeline to top for consistent capture
       $.timelineArea.scrollTop = 0;
 
-      // Capture the timeline container at 1x resolution
+      // Capture the timeline container at 2x for crisp PDF
       var canvas = await html2canvas($.timelineContainer, {
-        scale: 1,
+        scale: 2,
         useCORS: true,
         logging: false,
         backgroundColor: '#FFFFFF',
