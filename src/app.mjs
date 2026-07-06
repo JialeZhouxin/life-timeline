@@ -4,7 +4,7 @@ import { calculateLayout } from './layout.mjs';
 import { saveEvents, loadEvents } from './storage.mjs';
 import {
   STORAGE_KEY, PADDING_TOP, PADDING_BOTTOM, MIN_RADIUS, MAX_RADIUS,
-  TICK_INTERVAL, BASE_HEIGHT, MIN_TIMELINE_HEIGHT,
+  TICK_INTERVAL, MOBILE_TICK_INTERVAL, BASE_HEIGHT, MIN_TIMELINE_HEIGHT,
   STAGE_COLORS, getStageColor,
 } from './constants.mjs';
 
@@ -28,6 +28,9 @@ function cacheDom() {
     'btnSaveEvent', 'btnDeleteEvent', 'btnCancelModal',
     'zoomIn', 'zoomOut', 'zoomLabel',
     'sidebarToggle', 'sidePanel',
+    'bsOverlay', 'bsAdd',
+    'bsInputAge', 'bsInputTitle', 'bsInputDesc', 'bsInputStage',
+    'bsInputImpact', 'bsImpactValue', 'bsBtnAdd',
     'btnExportHTML', 'btnExportPDF', 'btnImportFile', 'fileInput', 'btnClearAll',
     'toast', 'toastMsg', 'toastUndo',
   ];
@@ -47,6 +50,23 @@ function getTimelineHeight() {
   const h = Math.max(BASE_HEIGHT * zoomLevel, ($.timelineContainer.clientHeight || 600));
   const minH = Math.max(currentEvents.length * 60 + 200, 600);
   return Math.max(h, minH);
+}
+
+// ===== Bottom Sheet (mobile) =====
+function openBottomSheet(id) {
+  const sheet = document.getElementById(id);
+  if (!sheet) return;
+  sheet.classList.add('active');
+  $.bsOverlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeBottomSheet() {
+  document.querySelectorAll('.bottom-sheet').forEach(function (s) {
+    s.classList.remove('active');
+  });
+  $.bsOverlay.classList.remove('active');
+  document.body.style.overflow = '';
 }
 
 // ===== Toast =====
@@ -151,10 +171,13 @@ function setupDrag(node, circle, ev) {
 // ===== Render =====
 function render(animating) {
   const height = getTimelineHeight();
+  const containerWidth = $.timelineContainer.clientWidth;
+  const effectiveTickInterval = containerWidth < 480 ? MOBILE_TICK_INTERVAL : TICK_INTERVAL;
   const layout = calculateLayout({
     events: currentEvents,
     currentAge,
     height,
+    tickInterval: effectiveTickInterval,
     padding: { top: PADDING_TOP, bottom: PADDING_BOTTOM },
   });
 
@@ -389,10 +412,14 @@ function init() {
     }
   }, { passive: false });
 
-  // Sidebar toggle (mobile)
+  // Sidebar toggle (mobile) / Bottom sheet trigger
   $.sidebarToggle.addEventListener('click', function () {
-    $.sidePanel.classList.toggle('collapsed');
-    this.textContent = $.sidePanel.classList.contains('collapsed') ? '✏' : '+';
+    if (window.innerWidth <= 768) {
+      openBottomSheet('bsAdd');
+    } else {
+      $.sidePanel.classList.toggle('collapsed');
+      this.textContent = $.sidePanel.classList.contains('collapsed') ? '✏' : '+';
+    }
   });
 
   // Modal: impact slider
@@ -497,6 +524,44 @@ function init() {
     reader.readAsText(file);
     e.target.value = '';
   });
+
+  // Bottom sheet: impact slider
+  $.bsInputImpact.addEventListener('input', function () {
+    $.bsImpactValue.textContent = this.value;
+  });
+
+  // Bottom sheet: add event submit
+  $.bsBtnAdd.addEventListener('click', function () {
+    const age = parseInt($.bsInputAge.value);
+    const title = $.bsInputTitle.value.trim();
+    if (isNaN(age)) { showToast('请输入年龄'); return; }
+    if (!title) { showToast('请输入标题'); return; }
+    try {
+      const event = createEvent({
+        age: age,
+        title: title,
+        description: $.bsInputDesc.value.trim(),
+        stage: $.bsInputStage.value,
+        impact: parseInt($.bsInputImpact.value) || 0,
+      });
+      currentEvents = addEvent(currentEvents, event);
+      saveEvents(currentEvents);
+      render(true);
+      $.bsInputAge.value = '';
+      $.bsInputTitle.value = '';
+      $.bsInputDesc.value = '';
+      $.bsInputStage.value = '';
+      $.bsInputImpact.value = 5;
+      $.bsImpactValue.textContent = '5';
+      closeBottomSheet();
+      showToast('已添加：「' + title + '」');
+    } catch (err) {
+      showToast(err.message);
+    }
+  });
+
+  // Bottom sheet: overlay click to close
+  $.bsOverlay.addEventListener('click', closeBottomSheet);
 
   // Clear all
   $.btnClearAll.addEventListener('click', function () {
