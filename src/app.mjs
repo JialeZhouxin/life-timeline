@@ -521,9 +521,10 @@ function init() {
       // Scroll timeline to top for consistent capture
       $.timelineArea.scrollTop = 0;
 
-      // Capture the timeline container at 2x for crisp PDF
+      // Capture at 3x for sharp text, limit to 8000px height (browser canvas safety)
+      var captureScale = Math.min(3, 8000 / $.timelineContainer.scrollHeight || 3);
       var canvas = await html2canvas($.timelineContainer, {
-        scale: 2,
+        scale: captureScale,
         useCORS: true,
         logging: false,
         backgroundColor: '#FFFFFF',
@@ -547,7 +548,7 @@ function init() {
         tmp.width = cw;
         tmp.height = sliceH;
         tmp.getContext('2d').drawImage(canvas, 0, srcY, cw, sliceH, 0, 0, cw, sliceH);
-        pdf.addImage(tmp.toDataURL('image/png'), 'PNG', margin, margin, usableW, sliceH / pxPerMm);
+        pdf.addImage(tmp.toDataURL('image/jpeg', 0.92), 'JPEG', margin, margin, usableW, sliceH / pxPerMm);
       }
 
       if (fullImgH <= usableH) {
