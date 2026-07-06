@@ -1,6 +1,6 @@
-const { describe, it } = require('node:test');
-const assert = require('node:assert');
-const { createEvent, addEvent, updateEvent, deleteEvent, inferStages } = require('../src/core');
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { createEvent, addEvent, updateEvent, deleteEvent, inferStages } from '../src/core.mjs';
 
 describe('createEvent', () => {
   it('creates an event with required fields', () => {
