@@ -8,6 +8,7 @@ export const PADDING_BOTTOM = 60;
 export const MIN_RADIUS = 6;
 export const MAX_RADIUS = 24;
 export const TICK_INTERVAL = 5;
+export const MOBILE_TICK_INTERVAL = 10;
 export const BASE_HEIGHT = 1200;
 export const MIN_TIMELINE_HEIGHT = 600;
 
