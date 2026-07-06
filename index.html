@@ -14,7 +14,7 @@
   --success: #16A34A;
   --warning: #D97706;
   --surface: #FFFFFF;
-  --surface-muted: #F8FAFC;
+  --surface-muted: #FDF6EC;
   --border: #E2E8F0;
   --text: #0F172A;
   --text-secondary: #64748B;
@@ -25,7 +25,7 @@
   --shadow-sm: 0 1px 2px rgba(0,0,0,.05);
   --shadow-md: 0 4px 12px rgba(0,0,0,.07);
   --shadow-lg: 0 8px 30px rgba(0,0,0,.1);
-  --font-sans: -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-sans: 'Inter', -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
   --font-mono: "SF Mono", "Fira Code", "Consolas", monospace;
   --tl-left: 80px; --tl-line-left: 100px; --tl-dot-left: 86px;
   --tl-label-left: 140px; --tl-tick-left: 74px;
@@ -33,6 +33,26 @@
 @media (max-width: 640px) {
   :root { --tl-left: 40px; --tl-line-left: 56px; --tl-dot-left: 42px; --tl-label-left: 84px; --tl-tick-left: 30px; }
 }
+
+/* ===== Inter Font ===== */
+@font-face {
+  font-family: 'Inter';
+  src: url('src/fonts/inter.woff2') format('woff2');
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+/* ===== Dot-Grid Texture (timeline area) ===== */
+.timeline-area::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(148,163,184,0.12) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+  z-index: 0;
+}
+.timeline-container { position: relative; z-index: 1; }
 
 /* ===== Reset & Base ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -272,23 +292,25 @@ body{font-family:var(--font-sans);background:var(--surface-muted);color:var(--te
   to   { transform: translateY(0); }
 }
 </style>
+<link rel="preconnect" href="https://unpkg.com">
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
 </head>
 <body>
 
 <header class="app-header">
-  <h1>&#x1f5fa;&#xfe0f; 生命轴</h1>
+  <h1><i data-lucide="map" style="vertical-align:middle;"></i> 生命轴</h1>
   <div class="age-display">
     当前年龄
     <input type="number" id="currentAgeInput" min="1" max="150" value="25" placeholder="年龄">
   </div>
 </header>
 
-<button class="sidebar-toggle" id="sidebarToggle" aria-label="切换表单面板">+</button>
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="切换表单面板"><i data-lucide="plus"></i></button>
 
 <div class="app-body">
 
   <aside class="side-panel" id="sidePanel">
-    <h2>&#x270f;&#xfe0f; 添加事件</h2>
+    <h2><i data-lucide="pen-square"></i> 添加事件</h2>
     <div class="form-group">
       <label for="inputAge">年龄</label>
       <input type="number" id="inputAge" min="0" max="150" placeholder="例如 22">
@@ -305,12 +327,12 @@ body{font-family:var(--font-sans);background:var(--surface-muted);color:var(--te
       <label for="inputStage">人生阶段</label>
       <select id="inputStage">
         <option value="">-- 不选择 --</option>
-        <option value="童年">&#x1f9f8; 童年</option>
-        <option value="青春期">&#x1f3eb; 青春期</option>
-        <option value="青年">&#x1f393; 青年</option>
-        <option value="职场">&#x1f4bc; 职场</option>
-        <option value="中年">&#x1f3e1; 中年</option>
-        <option value="晚年">&#x1f305; 晚年</option>
+        <option value="童年">童年</option>
+        <option value="青春期">青春期</option>
+        <option value="青年">青年</option>
+        <option value="职场">职场</option>
+        <option value="中年">中年</option>
+        <option value="晚年">晚年</option>
       </select>
     </div>
     <div class="form-group">
@@ -320,17 +342,17 @@ body{font-family:var(--font-sans);background:var(--surface-muted);color:var(--te
         <span class="impact-value" id="impactValue">5</span>
       </div>
     </div>
-    <button class="btn btn-primary" id="btnAddEvent">&#x2795; 添加到时间轴</button>
+    <button class="btn btn-primary" id="btnAddEvent"><i data-lucide="plus"></i> 添加到时间轴</button>
 
     <hr class="section-divider">
 
     <div style="display:flex;gap:8px;">
-      <button class="btn btn-outline btn-sm" id="btnExportHTML" style="flex:1;">&#x1f4e4; 导出 HTML</button>
-      <button class="btn btn-outline btn-sm" id="btnExportPDF" style="flex:1;">&#x1f4c4; 导出 PDF</button>
+      <button class="btn btn-outline btn-sm" id="btnExportHTML" style="flex:1;"><i data-lucide="upload"></i> 导出 HTML</button>
+      <button class="btn btn-outline btn-sm" id="btnExportPDF" style="flex:1;"><i data-lucide="file-text"></i> 导出 PDF</button>
     </div>
     <div style="margin-top:8px;display:flex;gap:8px;">
-      <button class="btn btn-outline btn-sm" id="btnImportFile" style="flex:1;">&#x1f4e5; 导入</button>
-      <button class="btn btn-danger btn-sm" id="btnClearAll" style="flex:1;">&#x1f5d1;&#xfe0f; 清空</button>
+      <button class="btn btn-outline btn-sm" id="btnImportFile" style="flex:1;"><i data-lucide="download"></i> 导入</button>
+      <button class="btn btn-danger btn-sm" id="btnClearAll" style="flex:1;"><i data-lucide="trash-2"></i> 清空</button>
     </div>
     <input type="file" id="fileInput" accept=".json,.html" style="display:none;">
     <p style="margin-top:16px;font-size:11px;color:var(--text-muted);text-align:center;">
@@ -351,7 +373,7 @@ body{font-family:var(--font-sans);background:var(--surface-muted);color:var(--te
     <div class="timeline-container" id="timelineContainer">
       <div class="timeline-line"></div>
       <div id="emptyState" class="empty-state">
-        <div class="icon">&#x1f331;</div>
+        <div class="icon"><i data-lucide="sprout" style="width:40px;height:40px;stroke-width:1.5;"></i></div>
         <p>你的人生还是一张白纸</p>
         <p style="font-size:12px;">在左侧填写第一个事件开始记录</p>
       </div>
@@ -379,12 +401,12 @@ body{font-family:var(--font-sans);background:var(--surface-muted);color:var(--te
       <label for="modalStage">人生阶段</label>
       <select id="modalStage">
         <option value="">-- 不选择 --</option>
-        <option value="童年">&#x1f9f8; 童年</option>
-        <option value="青春期">&#x1f3eb; 青春期</option>
-        <option value="青年">&#x1f393; 青年</option>
-        <option value="职场">&#x1f4bc; 职场</option>
-        <option value="中年">&#x1f3e1; 中年</option>
-        <option value="晚年">&#x1f305; 晚年</option>
+        <option value="童年">童年</option>
+        <option value="青春期">青春期</option>
+        <option value="青年">青年</option>
+        <option value="职场">职场</option>
+        <option value="中年">中年</option>
+        <option value="晚年">晚年</option>
       </select>
     </div>
     <div class="form-group">
@@ -395,8 +417,8 @@ body{font-family:var(--font-sans);background:var(--surface-muted);color:var(--te
       </div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-danger" id="btnDeleteEvent">&#x1f5d1;&#xfe0f; 删除</button>
-      <button class="btn btn-primary" id="btnSaveEvent">&#x1f4be; 保存</button>
+      <button class="btn btn-danger" id="btnDeleteEvent"><i data-lucide="trash-2"></i> 删除</button>
+      <button class="btn btn-primary" id="btnSaveEvent"><i data-lucide="save"></i> 保存</button>
       <button class="btn btn-outline" id="btnCancelModal">取消</button>
     </div>
   </div>
@@ -414,7 +436,7 @@ body{font-family:var(--font-sans);background:var(--surface-muted);color:var(--te
 <div class="bottom-sheet" id="bsAdd">
   <div class="bs-handle"></div>
   <div class="bs-content">
-    <h3 style="font-size:16px;font-weight:600;margin-bottom:16px;">&#x270f;&#xfe0f; 添加事件</h3>
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:16px;"><i data-lucide="pen-square"></i> 添加事件</h3>
     <div class="form-group">
       <label for="bsInputAge">年龄</label>
       <input type="number" id="bsInputAge" min="0" max="150" placeholder="例如 22">
@@ -431,12 +453,12 @@ body{font-family:var(--font-sans);background:var(--surface-muted);color:var(--te
       <label for="bsInputStage">人生阶段</label>
       <select id="bsInputStage">
         <option value="">-- 不选择 --</option>
-        <option value="童年">&#x1f9f8; 童年</option>
-        <option value="青春期">&#x1f3eb; 青春期</option>
-        <option value="青年">&#x1f393; 青年</option>
-        <option value="职场">&#x1f4bc; 职场</option>
-        <option value="中年">&#x1f3e1; 中年</option>
-        <option value="晚年">&#x1f305; 晚年</option>
+        <option value="童年">童年</option>
+        <option value="青春期">青春期</option>
+        <option value="青年">青年</option>
+        <option value="职场">职场</option>
+        <option value="中年">中年</option>
+        <option value="晚年">晚年</option>
       </select>
     </div>
     <div class="form-group">
@@ -446,7 +468,7 @@ body{font-family:var(--font-sans);background:var(--surface-muted);color:var(--te
         <span class="impact-value" id="bsImpactValue">5</span>
       </div>
     </div>
-    <button class="btn btn-primary" id="bsBtnAdd">&#x2795; 添加到时间轴</button>
+    <button class="btn btn-primary" id="bsBtnAdd"><i data-lucide="plus"></i> 添加到时间轴</button>
   </div>
 </div>
 

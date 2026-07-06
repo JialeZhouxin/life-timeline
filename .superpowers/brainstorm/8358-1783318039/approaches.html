@@ -1,0 +1,60 @@
+<h2>移动端适配：三种方案</h2>
+<p class="subtitle">在已有基础上改进 vs 重新设计</p>
+
+<div class="options">
+
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>渐进式增强</h3>
+      <p style="color:#64748B;font-size:14px;">最小改动路线</p>
+      <ul style="font-size:13px;color:#475569;padding-left:18px;">
+        <li>增大触摸区域（节点 44px 触控范围）</li>
+        <li>模态框响应式（最大宽度适配屏幕）</li>
+        <li>刻度自适应间隔</li>
+        <li>保持现有侧边栏折叠模式</li>
+      </ul>
+      <div class="pros-cons" style="margin-top:8px;">
+        <div class="pros" style="font-size:12px;"><h4 style="font-size:13px;">优点</h4>改动小、风险低、1-2 小时完成</div>
+        <div class="cons" style="font-size:12px;"><h4 style="font-size:13px;">缺点</h4>表单体验没改善、加事件仍需 4 步</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>底部面板 + 浮动按钮</h3>
+      <p style="color:#64748B;font-size:14px;">表单体验优先</p>
+      <ul style="font-size:13px;color:#475569;padding-left:18px;">
+        <li>点击浮动按钮 → 底部滑出添加面板</li>
+        <li>面板占下半屏，不离开时间轴视图</li>
+        <li>事件节点触控面积增大到 44px</li>
+        <li>模态框变为底部弹出式（Bottom Sheet）</li>
+      </ul>
+      <div class="pros-cons" style="margin-top:8px;">
+        <div class="pros" style="font-size:12px;"><h4 style="font-size:13px;">优点</h4>加事件只需 2 步、不跳转页面、沉浸感强</div>
+        <div class="cons" style="font-size:12px;"><h4 style="font-size:13px;">缺点</h4>需要新增 CSS + HTML 结构，约 3-4 小时</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>底部 Tab 导航</h3>
+      <p style="color:#64748B;font-size:14px;">完整重构移动端布局</p>
+      <ul style="font-size:13px;color:#475569;padding-left:18px;">
+        <li>底部 Tab 栏：时间轴 | 添加 | 统计</li>
+        <li>添加页为独立全屏视图</li>
+        <li>编辑事件为底部弹出面板</li>
+        <li>触摸全面优化 + 手势支持</li>
+      </ul>
+      <div class="pros-cons" style="margin-top:8px;">
+        <div class="pros" style="font-size:12px;"><h4 style="font-size:13px;">优点</h4>最接近原生 App 体验</div>
+        <div class="cons" style="font-size:12px;"><h4 style="font-size:13px;">缺点</h4>改动量大（HTML/CSS/JS 都要改）、可能需要状态管理调整</div>
+      </div>
+    </div>
+  </div>
+
+</div>

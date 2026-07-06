@@ -331,6 +331,9 @@ function importData(data) {
 function init() {
   cacheDom();
 
+  // Render Lucide icons
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+
   // Load saved data
   currentEvents = loadEvents();
   const savedAge = localStorage.getItem('life-timeline-age');
@@ -418,7 +421,6 @@ function init() {
       openBottomSheet('bsAdd');
     } else {
       $.sidePanel.classList.toggle('collapsed');
-      this.textContent = $.sidePanel.classList.contains('collapsed') ? '✏' : '+';
     }
   });
 
