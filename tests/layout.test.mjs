@@ -1,7 +1,7 @@
-const { describe, it } = require('node:test');
-const assert = require('node:assert');
-const { createEvent } = require('../src/core');
-const { calculateLayout } = require('../src/layout');
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { createEvent } from '../src/core.mjs';
+import { calculateLayout } from '../src/layout.mjs';
 
 describe('calculateLayout', () => {
   it('returns empty layout for no events', () => {
@@ -93,8 +93,32 @@ describe('calculateLayout', () => {
     ];
     const layout = calculateLayout({ events, currentAge: 30, height: 400 });
 
-    assert.equal(layout.events[0].event.title, 'A');
-    assert.equal(layout.events[1].event.title, 'B');
-    assert.equal(layout.events[2].event.title, 'C');
+    assert.equal(layout.events[0].title, 'A');
+    assert.equal(layout.events[1].title, 'B');
+    assert.equal(layout.events[2].title, 'C');
+  });
+
+  it('returns age ticks from 0 to currentAge', () => {
+    const events = [createEvent({ age: 10, title: 'X', impact: 5 })];
+    const layout = calculateLayout({ events, currentAge: 25, height: 600 });
+    assert.ok(Array.isArray(layout.ticks));
+    assert.ok(layout.ticks.length >= 5); // 0,5,10,15,20,25 = 6
+    assert.equal(layout.ticks[0].age, 0);
+    assert.equal(layout.ticks[layout.ticks.length - 1].age, 25);
+    layout.ticks.forEach(t => {
+      assert.equal(typeof t.age, 'number');
+      assert.equal(typeof t.y, 'number');
+      assert.ok(t.y >= 0);
+    });
+  });
+
+  it('stage bars have colors assigned', () => {
+    const events = [
+      createEvent({ age: 10, title: 'A', stage: '童年', impact: 3 }),
+    ];
+    const layout = calculateLayout({ events, currentAge: 30, height: 600 });
+    assert.ok(layout.stages.length > 0);
+    assert.ok(layout.stages[0].color);
+    assert.match(layout.stages[0].color, /^#/);
   });
 });
