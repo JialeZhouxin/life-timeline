@@ -131,4 +131,4 @@ function inferStages(events) {
   return result;
 }
 
-module.exports = { createEvent, addEvent, updateEvent, deleteEvent, inferStages };
+export { createEvent, addEvent, updateEvent, deleteEvent, inferStages, generateId };
