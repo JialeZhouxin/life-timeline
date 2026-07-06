@@ -1,10 +1,10 @@
-const STORAGE_KEY = 'life-timeline-events';
+import { STORAGE_KEY } from './constants.mjs';
 
 /**
  * Save events to localStorage.
  * @param {Array} events
  */
-function saveEvents(events) {
+export function saveEvents(events) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
 }
 
@@ -12,7 +12,7 @@ function saveEvents(events) {
  * Load events from localStorage.
  * @returns {Array}
  */
-function loadEvents() {
+export function loadEvents() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
@@ -21,5 +21,3 @@ function loadEvents() {
     return [];
   }
 }
-
-module.exports = { saveEvents, loadEvents };
