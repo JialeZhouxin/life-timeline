@@ -14,7 +14,7 @@ import {
  * @param {Object} [opts.padding] - {top, bottom}
  * @returns {{ events: Array, stages: Array, ticks: Array, totalHeight: number, padding: Object }}
  */
-function calculateLayout({ events, currentAge, height, padding = {} }) {
+function calculateLayout({ events, currentAge, height, padding = {}, tickInterval }) {
   const top = padding.top ?? PADDING_TOP;
   const bottom = padding.bottom ?? PADDING_BOTTOM;
 
@@ -46,12 +46,13 @@ function calculateLayout({ events, currentAge, height, padding = {} }) {
     radius: impactToRadius(event.impact),
   }));
 
-  // Age ticks
+  // Age ticks (with optional custom interval)
+  const interval = tickInterval ?? TICK_INTERVAL;
   const ticks = [];
-  for (let a = 0; a <= currentAge; a += TICK_INTERVAL) {
+  for (let a = 0; a <= currentAge; a += interval) {
     ticks.push({ age: a, y: ageToY(a) });
   }
-  if (currentAge % TICK_INTERVAL !== 0) {
+  if (currentAge % interval !== 0) {
     ticks.push({ age: currentAge, y: ageToY(currentAge) });
   }
 
