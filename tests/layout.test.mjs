@@ -121,4 +121,15 @@ describe('calculateLayout', () => {
     assert.ok(layout.stages[0].color);
     assert.match(layout.stages[0].color, /^#/);
   });
+
+  it('uses custom tickInterval when provided', () => {
+    const events = [createEvent({ age: 10, title: 'X', impact: 5 })];
+    const layout = calculateLayout({ events, currentAge: 30, height: 600, tickInterval: 10 });
+    // With tickInterval=10: ticks at 0,10,20,30 = 4 ticks
+    assert.equal(layout.ticks.length, 4);
+    assert.equal(layout.ticks[0].age, 0);
+    assert.equal(layout.ticks[1].age, 10);
+    assert.equal(layout.ticks[2].age, 20);
+    assert.equal(layout.ticks[3].age, 30);
+  });
 });
