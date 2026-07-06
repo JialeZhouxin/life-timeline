@@ -46,6 +46,13 @@ function escHtml(str) {
   return div.innerHTML;
 }
 
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+}
+
 function getTimelineHeight() {
   const h = Math.max(BASE_HEIGHT * zoomLevel, ($.timelineContainer.clientHeight || 600));
   const minH = Math.max(currentEvents.length * 60 + 200, 600);
@@ -222,11 +229,15 @@ function render(animating) {
     circle.className = 'event-circle';
     circle.style.width = (ev.radius * 2) + 'px';
     circle.style.height = (ev.radius * 2) + 'px';
-    circle.style.border = '3px solid ' + (ev.stage ? getStageColor(ev.stage) : '#3B82F6');
+    const stageColor = ev.stage ? getStageColor(ev.stage) : '#3B82F6';
+    circle.style.border = '3px solid ' + stageColor;
+    circle.style.background = 'radial-gradient(circle at 35% 30%, #ffffff 0%, ' + hexToRgba(stageColor, 0.15) + ' 100%)';
+    circle.style.boxShadow = '0 0 0 2px rgba(255,255,255,0.9), 0 0 0 6px ' + hexToRgba(stageColor, 0.12) + ', 0 2px 8px rgba(0,0,0,0.06)';
     circle.title = '影响力: ' + ev.impact + '/10';
 
     const label = document.createElement('div');
     label.className = 'event-label';
+    label.style.borderLeftColor = stageColor;
     label.innerHTML =
       '<span class="event-title">' + escHtml(ev.title) + '</span>' +
       '<span class="event-age">' + ev.age + ' 岁</span>' +
@@ -241,6 +252,19 @@ function render(animating) {
       openEditModal(this.dataset.id);
     });
     setupDrag(node, circle, ev);
+  }
+
+  // Timeline line gradient (follow stage colors)
+  var line = $.timelineContainer.querySelector('.timeline-line');
+  if (layout.stages.length > 0) {
+    var stops = layout.stages.map(function (s) {
+      var topPct = (s.startY / height) * 100;
+      var botPct = (s.endY / height) * 100;
+      return s.color + ' ' + topPct + '% ' + botPct + '%';
+    });
+    line.style.background = 'linear-gradient(to bottom, ' + stops.join(', ') + ')';
+  } else {
+    line.style.background = '';
   }
 
   $.eventCount.textContent = currentEvents.length;
