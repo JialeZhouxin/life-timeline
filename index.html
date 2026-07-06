@@ -290,6 +290,49 @@ body{font-family:var(--font-sans);background:var(--surface-muted);color:var(--te
   <button class="toast-undo" id="toastUndo" style="display:none;">撤销</button>
 </div>
 
+<!-- Bottom Sheet Overlay (mobile) -->
+<div class="bs-overlay" id="bsOverlay"></div>
+
+<!-- Add Event Bottom Sheet (mobile) -->
+<div class="bottom-sheet" id="bsAdd">
+  <div class="bs-handle"></div>
+  <div class="bs-content">
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:16px;">&#x270f;&#xfe0f; 添加事件</h3>
+    <div class="form-group">
+      <label for="bsInputAge">年龄</label>
+      <input type="number" id="bsInputAge" min="0" max="150" placeholder="例如 22">
+    </div>
+    <div class="form-group">
+      <label for="bsInputTitle">标题</label>
+      <input type="text" id="bsInputTitle" placeholder="例如 大学毕业">
+    </div>
+    <div class="form-group">
+      <label for="bsInputDesc">描述</label>
+      <textarea id="bsInputDesc" placeholder="记录更多的细节…"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="bsInputStage">人生阶段</label>
+      <select id="bsInputStage">
+        <option value="">-- 不选择 --</option>
+        <option value="童年">&#x1f9f8; 童年</option>
+        <option value="青春期">&#x1f3eb; 青春期</option>
+        <option value="青年">&#x1f393; 青年</option>
+        <option value="职场">&#x1f4bc; 职场</option>
+        <option value="中年">&#x1f3e1; 中年</option>
+        <option value="晚年">&#x1f305; 晚年</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>影响力</label>
+      <div class="impact-row">
+        <input type="range" id="bsInputImpact" min="0" max="10" value="5">
+        <span class="impact-value" id="bsImpactValue">5</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="bsBtnAdd">&#x2795; 添加到时间轴</button>
+  </div>
+</div>
+
 <script type="module" src="src/app.mjs"></script>
 </body>
 </html>
