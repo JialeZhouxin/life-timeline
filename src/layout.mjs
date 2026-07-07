@@ -46,6 +46,24 @@ function calculateLayout({ events, currentAge, height, padding = {}, tickInterva
     radius: impactToRadius(event.impact),
   }));
 
+  // Stagger same-age events so they don't overlap
+  const ageGroups = {};
+  positionedEvents.forEach(ev => {
+    if (!ageGroups[ev.age]) ageGroups[ev.age] = [];
+    ageGroups[ev.age].push(ev);
+  });
+  for (const age of Object.keys(ageGroups)) {
+    const group = ageGroups[age];
+    if (group.length <= 1) continue;
+    const spacing = 30;
+    const total = (group.length - 1) * spacing;
+    const start = -total / 2;
+    group.forEach((ev, i) => {
+      ev.y += start + i * spacing;
+      ev.sameAge = true;
+    });
+  }
+
   // Age ticks (with optional custom interval)
   const interval = tickInterval ?? TICK_INTERVAL;
   const ticks = [];

@@ -243,6 +243,7 @@ function render(animating) {
       '<span class="event-age">' + ev.age + ' 岁</span>' +
       (ev.description ? '<span class="event-desc">' + escHtml(ev.description) + '</span>' : '');
 
+    if (ev.sameAge) node.classList.add('same-age');
     node.appendChild(circle);
     node.appendChild(label);
     container.appendChild(node);
@@ -252,6 +253,35 @@ function render(animating) {
       openEditModal(this.dataset.id);
     });
     setupDrag(node, circle, ev);
+  }
+
+  // Same-age bracket connectors
+  var bracketGroups = {};
+  for (var _i = 0; _i < layout.events.length; _i++) {
+    var _ev = layout.events[_i];
+    if (_ev.sameAge) {
+      if (!bracketGroups[_ev.age]) bracketGroups[_ev.age] = [];
+      bracketGroups[_ev.age].push(_ev);
+    }
+  }
+  for (var age in bracketGroups) {
+    var g = bracketGroups[age];
+    if (g.length <= 1) continue;
+    var minY = Math.min.apply(null, g.map(function(e) { return e.y; }));
+    var maxY = Math.max.apply(null, g.map(function(e) { return e.y; }));
+    var bracket = document.createElement('div');
+    bracket.className = 'age-bracket';
+    bracket.style.top = minY + 'px';
+    bracket.style.height = (maxY - minY) + 'px';
+    container.appendChild(bracket);
+
+    // Horizontal connectors from each circle to the bracket
+    for (var _j = 0; _j < g.length; _j++) {
+      var conn = document.createElement('div');
+      conn.className = 'age-connector';
+      conn.style.top = g[_j].y + 'px';
+      container.appendChild(conn);
+    }
   }
 
   // Timeline line gradient (follow stage colors)
