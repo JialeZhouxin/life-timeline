@@ -31,7 +31,7 @@ function cacheDom() {
     'bsOverlay', 'bsAdd',
     'bsInputAge', 'bsInputTitle', 'bsInputDesc', 'bsInputStage',
     'bsInputImpact', 'bsImpactValue', 'bsBtnAdd',
-    'btnExportPDF', 'btnClearAll', 'btnExportJSON', 'btnImportJSON', 'fileInput',
+    'btnExportPDF', 'btnClearAll', 'btnExportJSON', 'btnImportJSON', 'bsBtnExportJSON', 'bsBtnImportJSON', 'fileInput',
     'toast', 'toastMsg', 'toastUndo',
   ];
   for (const id of ids) {
@@ -507,7 +507,7 @@ function init() {
   });
 
   // JSON Export
-  $.btnExportJSON.addEventListener('click', function () {
+  function handleExportJSON() {
     const data = {
       version: 1,
       exportedAt: new Date().toISOString(),
@@ -520,7 +520,9 @@ function init() {
       'application/json'
     );
     showToast('已导出 JSON 数据');
-  });
+  }
+  $.btnExportJSON.addEventListener('click', handleExportJSON);
+  $.bsBtnExportJSON.addEventListener('click', handleExportJSON);
 
   // Export PDF (direct download — html2canvas + jsPDF)
   $.btnExportPDF.addEventListener('click', async function () {
@@ -605,9 +607,9 @@ function init() {
   });
 
   // JSON Import
-  $.btnImportJSON.addEventListener('click', function () {
-    $.fileInput.click();
-  });
+  function handleImportJSONClick() { $.fileInput.click(); }
+  $.btnImportJSON.addEventListener('click', handleImportJSONClick);
+  $.bsBtnImportJSON.addEventListener('click', handleImportJSONClick);
   $.fileInput.addEventListener('change', function (e) {
     const file = e.target.files[0];
     if (!file) return;
