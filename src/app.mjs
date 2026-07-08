@@ -671,7 +671,13 @@ function init() {
   });
 
   // JSON Import
-  function handleImportJSONClick() { $.fileInput.click(); }
+  function handleImportJSONClick() {
+    console.log('[import] tlBtnImportJSON clicked');
+    console.log('[import] $.fileInput:', $.fileInput);
+    console.log('[import] $.fileInput offsetParent:', $.fileInput.offsetParent);
+    console.log('[import] $.fileInput getComputedStyle display:', getComputedStyle($.fileInput).display);
+    $.fileInput.click();
+  }
   $.btnImportJSON.addEventListener('click', handleImportJSONClick);
   $.bsBtnImportJSON.addEventListener('click', handleImportJSONClick);
   $.tlBtnImportJSON.addEventListener('click', handleImportJSONClick);
