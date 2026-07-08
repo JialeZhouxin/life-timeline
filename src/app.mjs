@@ -31,7 +31,7 @@ function cacheDom() {
     'bsOverlay', 'bsAdd',
     'bsInputAge', 'bsInputTitle', 'bsInputDesc', 'bsInputStage',
     'bsInputImpact', 'bsImpactValue', 'bsBtnAdd',
-    'btnExportHTML', 'btnExportPDF', 'btnImportFile', 'fileInput', 'btnClearAll',
+    'btnExportPDF', 'btnClearAll', 'btnExportJSON', 'btnImportJSON', 'fileInput',
     'toast', 'toastMsg', 'toastUndo',
   ];
   for (const id of ids) {
@@ -336,19 +336,6 @@ function downloadFile(content, filename, mimeType) {
   URL.revokeObjectURL(url);
 }
 
-function generateEditableHTML(data) {
-  const items = data.events.slice().sort(function (a, b) { return a.age - b.age; });
-  let list = '';
-  for (let i = 0; i < items.length; i++) {
-    const e = items[i];
-    const st = e.stage ? ' <span style="font-size:12px;color:#64748B;">[' + escHtml(e.stage) + ']</span>' : '';
-    const desc = e.description ? '<div class="desc">' + escHtml(e.description) + '</div>' : '';
-    list += '<div class="event"><span class="age">' + e.age + ' 岁</span><div class="info"><div class="title">' + escHtml(e.title) + st + '</div>' + desc + '</div><div class="impact">影响力: ' + e.impact + '/10</div></div>';
-  }
-  const jsonStr = JSON.stringify(data).replace(/<\//g, '<\\/');
-  return '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>生命轴 - 备份</title><style>body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#F8FAFC;padding:20px;color:#0F172A;max-width:800px;margin:0 auto;}h1{color:#3B82F6;font-size:22px;}.meta{color:#64748B;font-size:13px;margin:8px 0 20px;}.event{background:#fff;border-radius:10px;padding:14px 18px;margin-bottom:10px;box-shadow:0 1px 2px rgba(0,0,0,.05);border:1px solid #E2E8F0;display:flex;align-items:center;gap:14px;}.event .age{background:#3B82F6;color:#fff;border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600;white-space:nowrap;}.event .info{flex:1;}.event .title{font-weight:600;font-size:15px;}.event .desc{font-size:13px;color:#64748B;margin-top:2px;}.event .impact{font-size:13px;color:#D97706;}.footer{margin-top:24px;font-size:12px;color:#94A3B8;text-align:center;}</style></head><body><h1>生命轴 - 数据备份</h1><div class="meta">导出时间: ' + data.exportedAt + ' | 当前年龄: ' + data.currentAge + ' 岁 | 共 ' + data.events.length + ' 个事件</div>' + list + '<div class="footer">用 生命轴 记录 · 导入此文件可恢复数据</div><script>window.__LIFELINE_DATA__ = ' + jsonStr + ';<\/script></body></html>';
-}
-
 function generatePrintHTML(events, age) {
   const sorted = events.slice().sort(function (a, b) { return a.age - b.age; });
   let list = '';
@@ -519,8 +506,8 @@ function init() {
     if (e.key === 'Escape' && $.modalOverlay.classList.contains('active')) closeModal();
   });
 
-  // Export HTML
-  $.btnExportHTML.addEventListener('click', function () {
+  // JSON Export
+  $.btnExportJSON.addEventListener('click', function () {
     const data = {
       version: 1,
       exportedAt: new Date().toISOString(),
@@ -528,11 +515,11 @@ function init() {
       events: currentEvents,
     };
     downloadFile(
-      generateEditableHTML(data),
-      '生命轴-' + new Date().toISOString().slice(0, 10) + '.html',
-      'text/html'
+      JSON.stringify(data, null, 2),
+      '生命轴-' + new Date().toISOString().slice(0, 10) + '.json',
+      'application/json'
     );
-    showToast('已导出可编辑 HTML');
+    showToast('已导出 JSON 数据');
   });
 
   // Export PDF (direct download — html2canvas + jsPDF)
@@ -617,8 +604,8 @@ function init() {
     }
   });
 
-  // Import
-  $.btnImportFile.addEventListener('click', function () {
+  // JSON Import
+  $.btnImportJSON.addEventListener('click', function () {
     $.fileInput.click();
   });
   $.fileInput.addEventListener('change', function (e) {
@@ -626,27 +613,13 @@ function init() {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = function (ev) {
-      // Try direct JSON parse
       try {
         const parsed = JSON.parse(ev.target.result);
         if (parsed.events && Array.isArray(parsed.events)) {
           importData(parsed);
           return;
         }
-      } catch (e1) { /* not JSON, try HTML extraction */ }
-
-      // Try extracting from HTML
-      const match = ev.target.result.match(/window\.__LIFELINE_DATA__\s*=\s*(\{.+?\});/);
-      if (match) {
-        try {
-          const parsed = JSON.parse(match[1]);
-          if (parsed.events) {
-            importData(parsed);
-            return;
-          }
-        } catch (e2) { /* extraction failed */ }
-      }
-
+      } catch (e1) { /* invalid JSON */ }
       showToast('无法识别的文件格式');
     };
     reader.readAsText(file);
