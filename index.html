@@ -145,7 +145,7 @@ body{font-family:var(--font-sans);background:var(--surface-muted);color:var(--te
 .zoom-controls button{width:28px;height:28px;border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-sm);cursor:pointer;font-size:16px;color:var(--text-secondary);transition:background .15s,color .15s;display:flex;align-items:center;justify-content:center}
 .zoom-controls button:hover{background:var(--surface-muted);color:var(--text)}
 .zoom-controls .zoom-label{font-size:11px;color:var(--text-muted);min-width:36px;text-align:center;font-variant-numeric:tabular-nums}
-.tl-toolbar-actions{display:none;align-items:center;gap:4px}
+.tl-toolbar-actions{display:flex;align-items:center;gap:4px}
 .tl-toolbar-actions button{width:28px;height:28px;padding:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-sm);cursor:pointer;color:var(--text-secondary);transition:background .15s,color .15s}
 .tl-toolbar-actions button:hover{background:var(--surface-muted);color:var(--text)}
 .tl-toolbar-actions .btn-danger:hover{background:#FEE2E2;color:#DC2626;border-color:#FCA5A5}
@@ -197,7 +197,6 @@ body{font-family:var(--font-sans);background:var(--surface-muted);color:var(--te
   .timeline-area{max-height:none}
   .sidebar-toggle{display:flex;align-items:center;justify-content:center}
   .side-panel{display:none}
-  .tl-toolbar-actions{display:flex}
 }
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:0s!important;transition-duration:0s!important}
