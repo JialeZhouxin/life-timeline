@@ -396,7 +396,7 @@ function downloadFile(content, filename, mimeType) {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
 }
 
 function generatePrintHTML(events, age) {
