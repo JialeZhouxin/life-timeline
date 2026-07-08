@@ -31,7 +31,7 @@ function cacheDom() {
     'bsOverlay', 'bsAdd',
     'bsInputAge', 'bsInputTitle', 'bsInputDesc', 'bsInputStage',
     'bsInputImpact', 'bsImpactValue', 'bsBtnAdd',
-    'btnExportPDF', 'btnClearAll', 'btnExportJSON', 'btnImportJSON', 'bsBtnExportJSON', 'bsBtnImportJSON', 'fileInput',
+    'btnOverview', 'btnExportPDF', 'btnClearAll', 'btnExportJSON', 'btnImportJSON', 'bsBtnExportJSON', 'bsBtnImportJSON', 'overviewOverlay', 'overviewContent', 'overviewClose', 'fileInput',
     'toast', 'toastMsg', 'toastUndo',
   ];
   for (const id of ids) {
@@ -321,6 +321,69 @@ function closeModal() {
   $.modalOverlay.classList.remove('active');
   document.body.style.overflow = '';
   editingId = null;
+}
+
+function closeOverview() {
+  $.overviewOverlay.classList.remove('active');
+}
+
+function showOverview() {
+  const events = currentEvents;
+  const total = events.length;
+  if (total === 0) {
+    showToast('暂无事件');
+    return;
+  }
+
+  const stages = [...new Set(events.filter(function (e) { return e.stage; }).map(function (e) { return e.stage; }))];
+  const avgImpact = (events.reduce(function (s, e) { return s + e.impact; }, 0) / total).toFixed(1);
+  const maxAge = Math.max.apply(null, events.map(function (e) { return e.age; }));
+  const minAge = Math.min.apply(null, events.map(function (e) { return e.age; }));
+
+  // Stage distribution
+  var stageCounts = {};
+  events.forEach(function (e) {
+    var s = e.stage || '未分类';
+    stageCounts[s] = (stageCounts[s] || 0) + 1;
+  });
+  var stageMax = Math.max.apply(null, Object.values(stageCounts)) || 1;
+  var stageColors = {};
+  events.forEach(function (e) {
+    if (e.stage && !stageColors[e.stage]) stageColors[e.stage] = getStageColor(e.stage);
+  });
+
+  var html = '';
+
+  // Stat cards
+  html += '<div class="overview-stats">';
+  html += '<div class="ov-stat"><div class="num">' + total + '</div><div class="label">事件总数</div></div>';
+  html += '<div class="ov-stat"><div class="num">' + stages.length + '</div><div class="label">人生阶段</div></div>';
+  html += '<div class="ov-stat"><div class="num">' + avgImpact + '</div><div class="label">平均影响力</div></div>';
+  html += '<div class="ov-stat"><div class="num">' + minAge + '−' + maxAge + '</div><div class="label">年龄跨度</div></div>';
+  html += '</div>';
+
+  // Stage distribution bars
+  html += '<div class="ov-section"><h4>各阶段事件分布</h4>';
+  for (var s in stageCounts) {
+    var pct = (stageCounts[s] / stageMax * 100).toFixed(0);
+    var color = stageColors[s] || '#94A3B8';
+    html += '<div class="ov-stage-row"><span class="name">' + escHtml(s) + '</span><div class="track"><div class="fill" style="width:' + pct + '%;background:' + color + '"></div></div><span class="count">' + stageCounts[s] + '</span></div>';
+  }
+  html += '</div>';
+
+  // Event list
+  var sorted = events.slice().sort(function (a, b) { return a.age - b.age; });
+  html += '<div class="ov-section"><h4>事件列表</h4>';
+  for (var i = 0; i < sorted.length; i++) {
+    var e = sorted[i];
+    var color = e.stage ? getStageColor(e.stage) : '#3B82F6';
+    var stageTag = e.stage ? '<span class="meta">' + escHtml(e.stage) + '</span>' : '';
+    html += '<div class="ov-event"><div class="age">' + e.age + '</div><div class="info"><div class="title">' + escHtml(e.title) + '</div>' + stageTag + '</div><div class="impact-dot" style="background:' + color + ';opacity:' + (e.impact / 10) + ';"></div></div>';
+  }
+  html += '</div>';
+
+  $.overviewContent.innerHTML = html;
+  $.overviewOverlay.classList.add('active');
 }
 
 // ===== Export / Import =====
@@ -627,6 +690,16 @@ function init() {
     reader.readAsText(file);
     e.target.value = '';
   });
+
+  // Overview
+  $.btnOverview.addEventListener('click', showOverview);
+  $.overviewOverlay.addEventListener('click', function (e) {
+    if (e.target === e.currentTarget) closeOverview();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && $.overviewOverlay.classList.contains('active')) closeOverview();
+  });
+  $.overviewClose.addEventListener('click', closeOverview);
 
   // Bottom sheet: impact slider
   $.bsInputImpact.addEventListener('input', function () {

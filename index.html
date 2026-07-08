@@ -162,6 +162,26 @@ body{font-family:var(--font-sans);background:var(--surface-muted);color:var(--te
 .toast .toast-undo{margin-left:12px;padding:3px 10px;background:rgba(255,255,255,.12);border:none;border-radius:4px;color:#fff;cursor:pointer;font-size:12px;transition:background .15s}
 .toast .toast-undo:hover{background:rgba(255,255,255,.2)}
 
+/* ===== Overview Modal ===== */
+.overview-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.ov-stat{background:var(--surface-muted);border-radius:var(--radius-sm);padding:14px;text-align:center}
+.ov-stat .num{font-size:24px;font-weight:700;color:var(--primary)}
+.ov-stat .label{font-size:12px;color:var(--text-secondary);margin-top:4px}
+.ov-section{margin-bottom:20px}
+.ov-section h4{font-size:14px;font-weight:600;margin-bottom:10px;color:var(--text)}
+.ov-stage-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.ov-stage-row .name{width:56px;font-size:13px;color:var(--text-secondary);text-align:right;flex-shrink:0}
+.ov-stage-row .track{flex:1;height:18px;background:var(--border);border-radius:4px;overflow:hidden}
+.ov-stage-row .fill{height:100%;border-radius:4px;transition:width .3s}
+.ov-stage-row .count{width:28px;font-size:13px;font-weight:600;color:var(--text)}
+.ov-event{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.ov-event:last-child{border-bottom:none}
+.ov-event .age{background:var(--primary);color:#fff;border-radius:12px;padding:2px 8px;font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0}
+.ov-event .info{flex:1;min-width:0}
+.ov-event .title{font-size:14px;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ov-event .meta{font-size:11px;color:var(--text-muted);margin-top:1px}
+.ov-event .impact-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
 /* ===== Section Divider ===== */
 .section-divider{margin:20px 0 16px;border:none;border-top:1px solid var(--border)}
 
@@ -373,6 +393,7 @@ body{font-family:var(--font-sans);background:var(--surface-muted);color:var(--te
       <span style="font-size:12px;color:var(--text-secondary);">共 <span id="eventCount">0</span> 个事件</span>
       <div class="spacer"></div>
       <div class="tl-toolbar-actions">
+        <button class="btn btn-outline btn-sm" id="btnOverview" title="全局概览"><i data-lucide="bar-chart-3" style="width:14px;height:14px;"></i></button>
         <button class="btn btn-outline btn-sm" id="btnExportPDF" title="导出 PDF"><i data-lucide="file-text" style="width:14px;height:14px;"></i> PDF</button>
         <button class="btn btn-danger btn-sm" id="btnClearAll" title="清空"><i data-lucide="trash-2" style="width:14px;height:14px;"></i></button>
       </div>
@@ -486,6 +507,17 @@ body{font-family:var(--font-sans);background:var(--surface-muted);color:var(--te
       <button class="btn btn-outline btn-sm" id="bsBtnExportJSON" style="flex:1"><i data-lucide="download" style="width:14px;height:14px;"></i> 导出数据</button>
       <button class="btn btn-outline btn-sm" id="bsBtnImportJSON" style="flex:1"><i data-lucide="upload" style="width:14px;height:14px;"></i> 导入数据</button>
     </div>
+  </div>
+</div>
+
+<!-- ===== Overview Modal ===== -->
+<div class="modal-overlay" id="overviewOverlay" role="dialog" aria-modal="true">
+  <div class="modal" id="overviewModal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+      <h3 style="margin:0;">全局概览</h3>
+      <button class="btn" id="overviewClose" style="width:32px;height:32px;padding:0;border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-sm);cursor:pointer;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;"><i data-lucide="x" style="width:16px;height:16px;"></i></button>
+    </div>
+    <div id="overviewContent"></div>
   </div>
 </div>
 
