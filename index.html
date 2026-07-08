@@ -382,11 +382,11 @@ body{font-family:var(--font-sans);background:var(--surface-muted);color:var(--te
     <p style="margin-top:8px;font-size:11px;color:var(--text-muted);text-align:center;">
       📄 工具栏「PDF」可打印 · 💾 导出 JSON 可备份
     </p>
-    <input type="file" id="fileInput" accept=".json" style="display:none;">
     <p style="margin-top:16px;font-size:11px;color:var(--text-muted);text-align:center;">
       数据保存在浏览器本地
     </p>
   </aside>
+  <input type="file" id="fileInput" accept=".json" style="position:absolute;left:-9999px;top:0;opacity:0;pointer-events:none;">
 
   <main class="timeline-area" id="timelineArea">
     <div class="timeline-toolbar">
