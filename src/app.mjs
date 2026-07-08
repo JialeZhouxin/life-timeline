@@ -388,12 +388,11 @@ function showOverview() {
 
 // ===== Export / Import =====
 function downloadFile(content, filename, mimeType) {
-  const a = document.createElement('a');
-  a.href = 'data:' + mimeType + ';charset=utf-8,' + encodeURIComponent(content);
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  // 导航到 blob URL 触发 WebView 下载管理器（兼容 Via / Android WebView）
+  const blob = new Blob([content], { type: mimeType + ';charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  window.location.href = url;
+  // URL 在页面卸载后自动回收，不需要主动 revoke
 }
 
 function generatePrintHTML(events, age) {
