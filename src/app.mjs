@@ -31,7 +31,7 @@ function cacheDom() {
     'bsOverlay', 'bsAdd',
     'bsInputAge', 'bsInputTitle', 'bsInputDesc', 'bsInputStage',
     'bsInputImpact', 'bsImpactValue', 'bsBtnAdd',
-    'btnOverview', 'btnExportPDF', 'btnClearAll', 'btnExportJSON', 'btnImportJSON', 'bsBtnExportJSON', 'bsBtnImportJSON', 'overviewOverlay', 'overviewContent', 'overviewClose', 'fileInput',
+    'btnOverview', 'tlBtnExportJSON', 'tlBtnImportJSON', 'btnExportPDF', 'btnClearAll', 'btnExportJSON', 'btnImportJSON', 'bsBtnExportJSON', 'bsBtnImportJSON', 'overviewOverlay', 'overviewContent', 'overviewClose', 'fileInput',
     'toast', 'toastMsg', 'toastUndo',
   ];
   for (const id of ids) {
@@ -586,6 +586,7 @@ function init() {
   }
   $.btnExportJSON.addEventListener('click', handleExportJSON);
   $.bsBtnExportJSON.addEventListener('click', handleExportJSON);
+  $.tlBtnExportJSON.addEventListener('click', handleExportJSON);
 
   // Export PDF (direct download — html2canvas + jsPDF)
   $.btnExportPDF.addEventListener('click', async function () {
@@ -673,6 +674,7 @@ function init() {
   function handleImportJSONClick() { $.fileInput.click(); }
   $.btnImportJSON.addEventListener('click', handleImportJSONClick);
   $.bsBtnImportJSON.addEventListener('click', handleImportJSONClick);
+  $.tlBtnImportJSON.addEventListener('click', handleImportJSONClick);
   $.fileInput.addEventListener('change', function (e) {
     const file = e.target.files[0];
     if (!file) return;
