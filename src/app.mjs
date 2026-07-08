@@ -388,15 +388,12 @@ function showOverview() {
 
 // ===== Export / Import =====
 function downloadFile(content, filename, mimeType) {
-  const blob = new Blob([content], { type: mimeType + ';charset=utf-8' });
-  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url;
+  a.href = 'data:' + mimeType + ';charset=utf-8,' + encodeURIComponent(content);
   a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
 }
 
 function generatePrintHTML(events, age) {
